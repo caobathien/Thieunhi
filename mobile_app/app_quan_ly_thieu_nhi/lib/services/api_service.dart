@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 
 class ApiConfig {
   // static const String baseUrl = "http://192.168.1.5:3000/api/v1";
-  static const baseUrl = "http://localhost:3000/api/v1";
+  // static const baseUrl = "http://localhost:3000/api/v1";
+  const baseUrl = "https://thieunhi.onrender.com/api/v1";
 
   static Future<String?> uploadImage(String filePath) async {
     try {

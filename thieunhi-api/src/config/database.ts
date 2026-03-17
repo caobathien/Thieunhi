@@ -3,15 +3,22 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  max: 20,
-  idleTimeoutMillis: 50000,
-  connectionTimeoutMillis: 50000,
+// const pool = new Pool({
+//   user: process.env.DB_USER,
+//   host: process.env.DB_HOST,
+//   database: process.env.DB_NAME,
+//   password: process.env.DB_PASSWORD,
+//   port: parseInt(process.env.DB_PORT || '5432'),
+//   max: 20,
+//   idleTimeoutMillis: 50000,
+//   connectionTimeoutMillis: 50000,
+// });
+
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 // Kiểm tra kết nối ngay lập tức bằng một truy vấn đơn giản
