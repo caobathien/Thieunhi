@@ -10,8 +10,8 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT || '5432'),
   max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
+  idleTimeoutMillis: 50000,
+  connectionTimeoutMillis: 50000,
 });
 
 // Kiểm tra kết nối ngay lập tức bằng một truy vấn đơn giản
