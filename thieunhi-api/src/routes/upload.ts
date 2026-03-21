@@ -7,8 +7,8 @@ const router = Router();
 // Cấu hình Multer để lưu file vào thư mục 'uploads'
 const storage = multer.diskStorage({
   destination: (req, res, cb) => {
-    // Sử dụng đường dẫn tuyệt đối để tránh lỗi CWD khác nhau trên server
-    const uploadsPath = path.join(__dirname, '../../../uploads'); 
+    // Sử dụng process.cwd() để đảm bảo đường dẫn ổn định cả ở DEV và PROD (dist)
+    const uploadsPath = path.join(process.cwd(), 'uploads'); 
     cb(null, uploadsPath);
   },
   filename: (req, file, cb) => {
@@ -33,38 +33,48 @@ const upload = multer({
   limits: {
     fileSize: 1024 * 1024 * 50 // Tăng giới hạn lên 50MB để hỗ trợ ảnh chất lượng cao
   }
-});
+}).single('image');
 
-router.post('/', upload.single('image'), (req: Request, res: Response): void => {
-  try {
-    console.log('--- Nhận yêu cầu upload ---');
-    console.log('Headers:', req.headers);
-    
-    if (!req.file) {
-      console.log('Error: Không tìm thấy file trong request');
-      res.status(400).json({ success: false, message: 'Vui lòng chọn một file ảnh để tải lên' });
+router.post('/', (req: Request, res: Response): void => {
+  upload(req, res, (err: any) => {
+    if (err) {
+      console.error('❌ Lỗi Multer:', err);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi khi tải ảnh lên',
+        error: err.message
+      });
       return;
     }
-    
-    console.log('File đã nhận:', req.file.filename, 'Size:', req.file.size);
-    
-    // Trả về URL tĩnh để client có thể truy cập ảnh
-    const imageUrl = `/uploads/${req.file.filename}`;
-    
-    res.status(200).json({
-      success: true,
-      data: {
-        url: imageUrl
+
+    try {
+      console.log('--- Nhận yêu cầu upload ---');
+      if (!req.file) {
+        console.log('Error: Không tìm thấy file trong request');
+        res.status(400).json({ success: false, message: 'Vui lòng chọn một file ảnh để tải lên' });
+        return;
       }
-    });
-  } catch (error: any) {
-    console.error('❌ Lỗi Upload:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi máy chủ khi tải ảnh lên',
-      error: error.message
-    });
-  }
+      
+      console.log('File đã nhận:', req.file.filename, 'Size:', req.file.size);
+      
+      // Trả về URL tĩnh để client có thể truy cập ảnh
+      const imageUrl = `/uploads/${req.file.filename}`;
+      
+      res.status(200).json({
+        success: true,
+        data: {
+          url: imageUrl
+        }
+      });
+    } catch (error: any) {
+      console.error('❌ Lỗi xử lý sau upload:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi máy chủ khi xử lý ảnh',
+        error: error.message
+      });
+    }
+  });
 });
 
 export default router;

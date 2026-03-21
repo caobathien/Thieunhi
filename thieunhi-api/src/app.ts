@@ -25,8 +25,9 @@ app.use(express.urlencoded({ extended: true }));
 import path from 'path';
 import fs from 'fs';
 
-const uploadsDir = path.join(__dirname, '../../uploads');
+const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
+  console.log('--- Đang tạo thư mục uploads tại:', uploadsDir);
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static(uploadsDir));

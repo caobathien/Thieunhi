@@ -72,7 +72,7 @@ class _LeaderProfileScreenState extends State<LeaderProfileScreen> {
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() => _isUploading = true);
-      final url = await ApiConfig.uploadImage(image.path);
+      final url = await ApiConfig.uploadImage(image);
       if (mounted) {
         setState(() {
           if (url != null) _avatarUrl = url;

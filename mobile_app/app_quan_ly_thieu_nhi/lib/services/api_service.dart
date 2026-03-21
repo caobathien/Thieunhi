@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'token_service.dart';
 
 class ApiConfig {
@@ -7,7 +8,7 @@ class ApiConfig {
   // static const baseUrl = "http://localhost:3000/api/v1";
   static const String baseUrl = "https://thieunhi.onrender.com/api/v1";
 
-  static Future<String?> uploadImage(String filePath) async {
+  static Future<String?> uploadImage(XFile imageFile) async {
     try {
       final token = await TokenService().getToken();
       var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
@@ -17,7 +18,13 @@ class ApiConfig {
         request.headers['Authorization'] = 'Bearer $token';
       }
       
-      request.files.add(await http.MultipartFile.fromPath('image', filePath));
+      // Use fromBytes to support Web (dart:io is not available on Web)
+      final bytes = await imageFile.readAsBytes();
+      request.files.add(http.MultipartFile.fromBytes(
+        'image', 
+        bytes,
+        filename: imageFile.name,
+      ));
       
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
@@ -25,8 +32,6 @@ class ApiConfig {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          // data['data']['url'] contains the relative path (e.g. /uploads/filename.jpg)
-          // We prepend the baseUrl domain to make it an absolute URL.
           final urlPath = data['data']['url'];
           final domain = baseUrl.replaceAll('/api/v1', '');
           return '$domain$urlPath';

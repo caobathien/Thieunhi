@@ -274,7 +274,7 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
                           final XFile? image = await picker.pickImage(source: ImageSource.gallery);
                           if (image != null) {
                             setST(() => isUploadingImage = true);
-                            final uploadedUrl = await ApiConfig.uploadImage(image.path);
+                            final uploadedUrl = await ApiConfig.uploadImage(image);
                             if (uploadedUrl != null) {
                               setST(() => currentImageUrl = uploadedUrl);
                             } else {

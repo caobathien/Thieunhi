@@ -229,7 +229,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() => _isUploadingImage = true);
-      final uploadedUrl = await ApiConfig.uploadImage(image.path);
+      final uploadedUrl = await ApiConfig.uploadImage(image);
       if (uploadedUrl != null) {
         setState(() => _avatarUrl = uploadedUrl);
       } else {
