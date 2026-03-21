@@ -9,6 +9,7 @@ import '../services/token_service.dart';
 import '../services/user_service.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../views/common/fullscreen_image_view.dart';
 
 class ActivityListScreen extends StatefulWidget {
   const ActivityListScreen({super.key});
@@ -130,18 +131,32 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (activity.imageUrl != null && activity.imageUrl!.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              child: Image.network(
-                activity.imageUrl!,
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 160,
-                  width: double.infinity,
-                  color: AppColors.surface,
-                  child: const Icon(Icons.image_not_supported_outlined, color: AppColors.textHint, size: 40),
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FullScreenImageView(
+                    imageUrl: activity.imageUrl!,
+                    heroTag: 'activity_${activity.id}',
+                  ),
+                ),
+              ),
+              child: Hero(
+                tag: 'activity_${activity.id}',
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  child: Image.network(
+                    activity.imageUrl!,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 160,
+                      width: double.infinity,
+                      color: AppColors.surface,
+                      child: const Icon(Icons.image_not_supported_outlined, color: AppColors.textHint, size: 40),
+                    ),
+                  ),
                 ),
               ),
             )
@@ -296,9 +311,23 @@ class _ActivityListScreenState extends State<ActivityListScreen> {
                       border: Border.all(color: AppColors.border),
                     ),
                     child: currentImageUrl != null && currentImageUrl!.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.network(currentImageUrl!, fit: BoxFit.cover),
+                        ? GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FullScreenImageView(
+                                  imageUrl: currentImageUrl!,
+                                  heroTag: 'activity_preview',
+                                ),
+                              ),
+                            ),
+                            child: Hero(
+                              tag: 'activity_preview',
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(currentImageUrl!, fit: BoxFit.cover),
+                              ),
+                            ),
                           )
                         : (isUploadingImage
                             ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
