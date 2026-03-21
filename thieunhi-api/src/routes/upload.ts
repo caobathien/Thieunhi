@@ -20,10 +20,13 @@ const storage = multer.diskStorage({
 
 // Chỉ chấp nhận các file ảnh
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  if (file.mimetype.startsWith('image/')) {
+  const extension = path.extname(file.originalname).toLowerCase();
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  
+  if (file.mimetype.startsWith('image/') || allowedExtensions.includes(extension)) {
     cb(null, true);
   } else {
-    cb(new Error('Chỉ chấp nhận file định dạng hình ảnh!'));
+    cb(new Error(`Chỉ chấp nhận file định dạng hình ảnh! (Mime: ${file.mimetype}, Ext: ${extension})`));
   }
 };
 
