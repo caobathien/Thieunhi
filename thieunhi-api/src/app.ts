@@ -41,6 +41,18 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// --- Route Debug để kiểm tra môi trường trên Render ---
+app.use('/api/v1/debug/env', (req: Request, res: Response) => {
+  res.json({
+    cwd: process.cwd(),
+    dirname: __dirname,
+    uploadsDir: path.join(process.cwd(), 'uploads'),
+    exists: fs.existsSync(path.join(process.cwd(), 'uploads')),
+    filesInCwd: fs.readdirSync(process.cwd())
+  });
+});
+
 app.use('/api/v1', routes);
 
 export default app;

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'token_service.dart';
 
@@ -18,12 +19,19 @@ class ApiConfig {
         request.headers['Authorization'] = 'Bearer $token';
       }
       
-      // Use fromBytes to support Web (dart:io is not available on Web)
+      // Set content type based on extension to help Multer filter
       final bytes = await imageFile.readAsBytes();
+      final extension = imageFile.name.split('.').last.toLowerCase();
+      String mimeType = 'image/jpeg';
+      if (extension == 'png') mimeType = 'image/png';
+      if (extension == 'gif') mimeType = 'image/gif';
+      if (extension == 'webp') mimeType = 'image/webp';
+
       request.files.add(http.MultipartFile.fromBytes(
         'image', 
         bytes,
         filename: imageFile.name,
+        contentType: MediaType.parse(mimeType),
       ));
       
       var streamedResponse = await request.send();
