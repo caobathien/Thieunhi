@@ -7,7 +7,9 @@ const router = Router();
 // Cấu hình Multer để lưu file vào thư mục 'uploads'
 const storage = multer.diskStorage({
   destination: (req, res, cb) => {
-    cb(null, 'uploads/');
+    // Sử dụng đường dẫn tuyệt đối để tránh lỗi CWD khác nhau trên server
+    const uploadsPath = path.join(__dirname, '../../../uploads'); 
+    cb(null, uploadsPath);
   },
   filename: (req, file, cb) => {
     // Đổi tên file để tránh trùng lặp: timestamp + tên gốc
@@ -29,16 +31,22 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 1024 * 1024 * 5 // Giới hạn 5MB
+    fileSize: 1024 * 1024 * 50 // Tăng giới hạn lên 50MB để hỗ trợ ảnh chất lượng cao
   }
 });
 
 router.post('/', upload.single('image'), (req: Request, res: Response): void => {
   try {
+    console.log('--- Nhận yêu cầu upload ---');
+    console.log('Headers:', req.headers);
+    
     if (!req.file) {
+      console.log('Error: Không tìm thấy file trong request');
       res.status(400).json({ success: false, message: 'Vui lòng chọn một file ảnh để tải lên' });
       return;
     }
+    
+    console.log('File đã nhận:', req.file.filename, 'Size:', req.file.size);
     
     // Trả về URL tĩnh để client có thể truy cập ảnh
     const imageUrl = `/uploads/${req.file.filename}`;
@@ -50,6 +58,7 @@ router.post('/', upload.single('image'), (req: Request, res: Response): void => 
       }
     });
   } catch (error: any) {
+    console.error('❌ Lỗi Upload:', error);
     res.status(500).json({
       success: false,
       message: 'Lỗi máy chủ khi tải ảnh lên',
