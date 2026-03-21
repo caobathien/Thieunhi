@@ -37,7 +37,7 @@ class ClassAssignmentModel {
     // Lấy danh sách Huynh trưởng của một lớp cụ thể
     async findByClass(classId: number, academicYear: string) {
         const query = `
-            SELECT ca.*, u.full_name, lp.christian_name, lp.phone, c.class_name
+            SELECT ca.*, u.full_name, u.gmail, lp.christian_name, lp.phone, c.class_name
             FROM class_assignments ca
             JOIN users u ON ca.user_id = u.id
             JOIN classes c ON ca.class_id = c.id
@@ -52,7 +52,7 @@ class ClassAssignmentModel {
     // Lấy tất cả phân công (kèm thông tin lớp và leader)
     async findAll(academicYear: string) {
         const query = `
-            SELECT ca.*, u.full_name, lp.christian_name, c.class_name
+            SELECT ca.*, u.full_name, u.gmail, lp.christian_name, c.class_name
             FROM class_assignments ca
             JOIN users u ON ca.user_id = u.id
             JOIN classes c ON ca.class_id = c.id

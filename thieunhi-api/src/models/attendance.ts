@@ -142,6 +142,19 @@ class AttendanceModel {
         const result = await pool.query(query, [classId, startDate, endDate]);
         return result.rows;
     }
+
+    // Kiểm tra vắng mặt liên tiếp
+    async getConsecutiveAbsences(childId: any, classId: number, limit: number = 3) {
+        const query = `
+            SELECT attendance_date, is_present, status
+            FROM attendance
+            WHERE child_id = $1 AND class_id = $2
+            ORDER BY attendance_date DESC
+            LIMIT $3;
+        `;
+        const result = await pool.query(query, [childId, classId, limit]);
+        return result.rows;
+    }
 }
 
 export default new AttendanceModel();
