@@ -1,14 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'token_service.dart';
 
 class ApiConfig {
   // static const String baseUrl = "http://192.168.1.5:3000/api/v1";
   // static const baseUrl = "http://localhost:3000/api/v1";
-  const baseUrl = "https://thieunhi.onrender.com/api/v1";
+  static const String baseUrl = "https://thieunhi.onrender.com/api/v1";
 
   static Future<String?> uploadImage(String filePath) async {
     try {
+      final token = await TokenService().getToken();
       var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
+      
+      // Add Authorization header
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      
       request.files.add(await http.MultipartFile.fromPath('image', filePath));
       
       var streamedResponse = await request.send();
@@ -24,8 +32,11 @@ class ApiConfig {
           return '$domain$urlPath';
         }
       }
+      print('Upload Response Status: ${response.statusCode}');
+      print('Upload Response Body: ${response.body}');
       return null;
     } catch (e) {
+      print('Upload Error: $e');
       return null;
     }
   }

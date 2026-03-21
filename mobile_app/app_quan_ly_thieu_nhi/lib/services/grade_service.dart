@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:open_file_plus/open_file_plus.dart';
+import 'package:open_filex/open_filex.dart';
 import 'api_service.dart';
 import 'token_service.dart';
 
@@ -89,7 +89,7 @@ Future<Map<String, dynamic>> updateGrade(String id, Map<String, dynamic> gradeDa
         final dir = await getApplicationDocumentsDirectory();
         final file = File('${dir.path}/BangDiemLop_$classId.xlsx');
         await file.writeAsBytes(response.bodyBytes);
-        await OpenFile.open(file.path);
+        await OpenFilex.open(file.path);
       }
     } catch (e) {
       // Ignored

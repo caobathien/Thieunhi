@@ -20,6 +20,7 @@
     "exceljs": "^4.4.0",
     "expo": "^55.0.3",
     "express": "^5.2.1",
+    "firebase": "^12.10.0",
     "helmet": "^8.1.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
@@ -28,8 +29,8 @@
     "nodemailer": "^7.0.13",
     "pg": "^8.18.0",
     "qrcode": "^1.5.4",
-    "swagger-ui-express": "^5.0.1",
     "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

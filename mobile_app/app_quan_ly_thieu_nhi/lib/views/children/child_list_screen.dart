@@ -3,6 +3,7 @@ import '../../services/child_service.dart';
 import '../../theme/app_theme.dart';
 import 'child_form_screen.dart';
 import 'child_detail_screen.dart';
+import '../attendances/attendance_qr_screen.dart';
 
 class ChildListScreen extends StatefulWidget {
   final String? userRole;
@@ -56,9 +57,39 @@ class _ChildListScreenState extends State<ChildListScreen> {
     setState(() {
       _filteredChildren = _children.where((child) {
         final fullName = "${child['baptismal_name'] ?? ''} ${child['last_name'] ?? ''} ${child['first_name'] ?? ''}".toLowerCase();
-        return fullName.contains(query.toLowerCase());
+        final maQr = (child['ma_qr'] ?? '').toString().toLowerCase();
+        final q = query.toLowerCase();
+        return fullName.contains(q) || maQr == q;
       }).toList();
     });
+  }
+
+  void _scanQRCode() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (c) => AttendanceQRScreen(
+          onScan: (code) {
+            setState(() {
+              _searchController.text = code;
+              _onSearchChanged(code);
+            });
+            
+            // Nếu tìm thấy đúng 1 đứa, tự động mở chi tiết luôn
+            if (_filteredChildren.length == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (c) => ChildDetailScreen(
+                  childData: _filteredChildren[0],
+                  userRole: widget.userRole,
+                  userProfile: widget.userProfile,
+                )),
+              );
+            }
+          },
+        ),
+      ),
+    );
   }
 
 
@@ -86,31 +117,48 @@ class _ChildListScreenState extends State<ChildListScreen> {
                 bottomRight: Radius.circular(24),
               ),
             ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                hintText: "Tìm kiếm tên thiếu nhi...",
-                hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
-                filled: true,
-                fillColor: AppColors.background,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: "Tìm kiếm tên thiếu nhi...",
+                      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
+                      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
+                      filled: true,
+                      fillColor: AppColors.background,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty 
+                        ? IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textLight),
+                            onPressed: () {
+                              _searchController.clear();
+                              _onSearchChanged("");
+                            },
+                          )
+                        : null,
+                    ),
+                  ),
                 ),
-                suffixIcon: _searchController.text.isNotEmpty 
-                  ? IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textLight),
-                      onPressed: () {
-                        _searchController.clear();
-                        _onSearchChanged("");
-                      },
-                    )
-                  : null,
-              ),
+                const SizedBox(width: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary),
+                    onPressed: () => _scanQRCode(),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(

@@ -23,7 +23,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Cho phép truy cập tĩnh tới thư mục uploads
 import path from 'path';
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+import fs from 'fs';
+
+const uploadsDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // --- Route kiểm tra cơ bản ---
 app.get('/', (req: Request, res: Response) => {
