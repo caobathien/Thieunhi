@@ -124,4 +124,25 @@ class AttendanceService {
       return {"success": false, "message": "Lỗi kết nối: $e"};
     }
   }
+
+  Future<Map<String, dynamic>> updateLessonTopic({
+    required int classId,
+    required String date,
+    required String topic,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/attendance/lesson-topic'),
+        headers: await _getHeaders(),
+        body: jsonEncode({
+          'class_id': classId,
+          'date': date,
+          'lesson_topic': topic,
+        }),
+      );
+      return jsonDecode(response.body);
+    } catch (e) {
+      return {"success": false, "message": "Lỗi kết nối: $e"};
+    }
+  }
 }

@@ -221,6 +221,65 @@ class _AttendanceStatsScreenState extends State<AttendanceStatsScreen> {
     );
   }
 
+  void _showEditTopicSheet(String dateKey, String currentTopic) {
+    bool isAdminOrLeader = _userRole == 'admin' || _userRole == 'leader';
+    if (!isAdminOrLeader) return;
+
+    TextEditingController topicCtrl = TextEditingController(text: currentTopic == "-" ? "" : currentTopic);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => Container(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(c).viewInsets.bottom, left: 24, right: 24, top: 32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Cập nhật bài dạy", style: AppTextStyles.titleMedium),
+            const SizedBox(height: 8),
+            Text("Ngày: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(dateKey))}", style: AppTextStyles.caption),
+            const SizedBox(height: 24),
+            TextField(
+              controller: topicCtrl,
+              maxLines: 2,
+              decoration: AppDecorations.inputDecoration(label: "Chủ đề bài dạy", prefixIcon: Icons.menu_book_rounded),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final res = await _attendanceService.updateLessonTopic(
+                    classId: widget.classId,
+                    date: dateKey,
+                    topic: topicCtrl.text.trim(),
+                  );
+                  if (res['success'] == true) {
+                    if (!c.mounted) return;
+                    Navigator.pop(c);
+                    _loadWeekData(_currentWeekStart);
+                  } else {
+                    if (!c.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? "Lỗi cập nhật")));
+                  }
+                },
+                child: const Text("LƯU THAY ĐỔI"),
+              ),
+            ),
+            const SizedBox(height: 48),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTypeButton({required String label, required IconData icon, required bool isSelected, required Color color, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
@@ -352,24 +411,28 @@ class _AttendanceStatsScreenState extends State<AttendanceStatsScreen> {
                                 DataRow(
                                   color: MaterialStateProperty.all(AppColors.background),
                                   cells: [
-                                    DataCell(
+                                    const DataCell(
                                       Text("BÀI DẠY", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 12)),
                                     ),
                                     ..._weekDays.map((d) {
                                       String dateKey = DateFormat('yyyy-MM-dd').format(d);
                                       String topic = _lessonTopics[dateKey] ?? "-";
                                       return DataCell(
-                                        Tooltip(
-                                          message: topic,
-                                          child: Container(
-                                            constraints: const BoxConstraints(maxWidth: 100),
-                                            child: Text(
-                                              topic,
-                                              style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.textSecondary),
-                                              overflow: TextOverflow.ellipsis,
+                                        Center(
+                                          child: Tooltip(
+                                            message: topic,
+                                            child: Container(
+                                              constraints: const BoxConstraints(maxWidth: 100),
+                                              child: Text(
+                                                topic,
+                                                style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.textSecondary),
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                              ),
                                             ),
                                           ),
                                         ),
+                                        onTap: () => _showEditTopicSheet(dateKey, topic),
                                       );
                                     }).toList(),
                                   ],

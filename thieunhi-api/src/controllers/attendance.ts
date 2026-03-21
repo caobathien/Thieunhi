@@ -67,6 +67,36 @@ class AttendanceController {
             return sendError(res, error.message);
         }
     }
+    
+    async updateLessonTopic(req: Request, res: Response) {
+        try {
+            const { class_id, date, lesson_topic } = req.body;
+            const currentUser = req.user;
+
+            if (!class_id || !date || lesson_topic === undefined) {
+                return sendError(res, 'Vui lòng cung cấp đủ thông tin', 400);
+            }
+
+            // Authorization
+            if (!currentUser) return sendError(res, 'Chưa đăng nhập', 401);
+
+            if (currentUser.role === 'admin' || currentUser.role === 'leader-vip') {
+                // OK
+            } else if (currentUser.role === 'leader') {
+                const isAssigned = await ClassAssignmentModel.isUserAssignedToClass(currentUser.id, Number(class_id));
+                if (!isAssigned) {
+                    return sendError(res, 'Bạn không được phân công phụ trách lớp này', 403);
+                }
+            } else {
+                return sendError(res, 'Bạn không có quyền cập nhật bài dạy', 403);
+            }
+
+            await AttendanceService.updateLessonTopic(Number(class_id), date, lesson_topic);
+            return sendSuccess(res, 'Cập nhật bài dạy thành công');
+        } catch (error: any) {
+            return sendError(res, error.message);
+        }
+    }
     // xem điểm danh theo lớp 
     async getClassReport(req: Request, res: Response) {
         try {
@@ -80,14 +110,6 @@ class AttendanceController {
 
             // Authorization
             if (!currentUser) return sendError(res, 'Chưa đăng nhập', 401);
-            if (currentUser.role === 'admin' || currentUser.role === 'leader-vip') {
-                // OK
-            } else if (currentUser.role === 'leader') {
-                const isAssigned = await ClassAssignmentModel.isUserAssignedToClass(currentUser.id, Number(class_id));
-                if (!isAssigned) return sendError(res, 'Bạn không có quyền xem dữ liệu lớp này', 403);
-            } else {
-                return sendError(res, 'Bạn không có quyền thực hiện hành động này', 403);
-            }
 
             const result = await AttendanceService.getClassReport(
                 Number(class_id), 
@@ -112,14 +134,6 @@ class AttendanceController {
 
             // Authorization
             if (!currentUser) return sendError(res, 'Chưa đăng nhập', 401);
-            if (currentUser.role === 'admin' || currentUser.role === 'leader-vip') {
-                // OK
-            } else if (currentUser.role === 'leader') {
-                const isAssigned = await ClassAssignmentModel.isUserAssignedToClass(currentUser.id, classId);
-                if (!isAssigned) return sendError(res, 'Bạn không có quyền xem dữ liệu lớp này', 403);
-            } else {
-                return sendError(res, 'Bạn không có quyền thực hiện hành động này', 403);
-            }
 
             const data = await AttendanceService.getClassReportByDate(classId, date as string);
             
@@ -138,14 +152,6 @@ class AttendanceController {
             const classId = Number(class_id);
             // Authorization
             if (!currentUser) return sendError(res, 'Chưa đăng nhập', 401);
-            if (currentUser.role === 'admin' || currentUser.role === 'leader-vip') {
-                // OK
-            } else if (currentUser.role === 'leader') {
-                const isAssigned = await ClassAssignmentModel.isUserAssignedToClass(currentUser.id, classId);
-                if (!isAssigned) return sendError(res, 'Bạn không có quyền xem dữ liệu lớp này', 403);
-            } else {
-                return sendError(res, 'Bạn không có quyền thực hiện hành động này', 403);
-            }
 
             const students = await AttendanceService.getManualList(
                 classId, 
@@ -172,14 +178,6 @@ class AttendanceController {
             const classId = Number(class_id);
             // Authorization
             if (!currentUser) return sendError(res, 'Chưa đăng nhập', 401);
-            if (currentUser.role === 'admin' || currentUser.role === 'leader-vip') {
-                // OK
-            } else if (currentUser.role === 'leader') {
-                const isAssigned = await ClassAssignmentModel.isUserAssignedToClass(currentUser.id, classId);
-                if (!isAssigned) return sendError(res, 'Bạn không có quyền xem dữ liệu lớp này', 403);
-            } else {
-                return sendError(res, 'Bạn không có quyền thực hiện hành động này', 403);
-            }
 
             const stats = await AttendanceService.getStats(
                 classId, 

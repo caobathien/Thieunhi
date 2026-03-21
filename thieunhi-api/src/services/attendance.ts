@@ -73,6 +73,10 @@ class AttendanceService {
         return result;
     }
 
+    async updateLessonTopic(classId: number, date: string, topic: string) {
+        return await AttendanceModel.updateLessonTopic(classId, date, topic);
+    }
+
     private async checkAndNotifyAbsences(childId: any, classId: number) {
         try {
             // 1. Kiểm tra 3 buổi gần nhất

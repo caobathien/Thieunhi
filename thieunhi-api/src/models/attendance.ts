@@ -155,6 +155,16 @@ class AttendanceModel {
         const result = await pool.query(query, [childId, classId, limit]);
         return result.rows;
     }
+
+    async updateLessonTopic(classId: number, date: string, topic: string) {
+        const query = `
+            UPDATE attendance 
+            SET lesson_topic = $1
+            WHERE class_id = $2 AND attendance_date = $3
+        `;
+        const result = await pool.query(query, [topic, classId, date]);
+        return result.rowCount;
+    }
 }
 
 export default new AttendanceModel();
