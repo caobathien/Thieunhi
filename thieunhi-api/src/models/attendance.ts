@@ -128,7 +128,8 @@ class AttendanceModel {
                 a.attendance_date,
                 a.status,
                 a.is_present,
-                a.reason
+                a.reason,
+                a.lesson_topic
             FROM children c
             LEFT JOIN attendance a 
                 ON c.id = a.child_id 

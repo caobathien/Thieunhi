@@ -28,6 +28,7 @@ class _AttendanceStatsScreenState extends State<AttendanceStatsScreen> {
 
   List<Map<String, dynamic>> _studentsList = [];
   final Map<String, Map<String, dynamic>> _attendanceDict = {};
+  final Map<String, String> _lessonTopics = {};
   List<DateTime> _weekDays = [];
 
   @override
@@ -62,6 +63,7 @@ class _AttendanceStatsScreenState extends State<AttendanceStatsScreen> {
       final List<dynamic> data = response['data'] ?? [];
       Map<String, Map<String, dynamic>> uniqueStudents = {};
       _attendanceDict.clear();
+      _lessonTopics.clear();
 
       for (var record in data) {
         String childIdStr = record['child_id'].toString();
@@ -81,6 +83,9 @@ class _AttendanceStatsScreenState extends State<AttendanceStatsScreen> {
             'is_present': record['is_present'],
             'reason': record['reason'],
           };
+          if (record['lesson_topic'] != null && record['lesson_topic'].toString().isNotEmpty) {
+            _lessonTopics[dateKey] = record['lesson_topic'].toString();
+          }
         }
       }
 
@@ -342,22 +347,51 @@ class _AttendanceStatsScreenState extends State<AttendanceStatsScreen> {
                                   ),
                                 )),
                               ],
-                              rows: _studentsList.map((s) {
-                                String cId = s['child_id'];
-                                String name = "${s['last_name']} ${s['first_name']}";
-                                return DataRow(cells: [
-                                  DataCell(
-                                    Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                                  ),
-                                  ..._weekDays.map((d) {
-                                    String dateKey = DateFormat('yyyy-MM-dd').format(d);
-                                    return DataCell(
-                                      _buildStatusWidget(_attendanceDict['${cId}_$dateKey']),
-                                      onTap: () => _showEditSheet(cId, dateKey, name),
-                                    );
-                                  }),
-                                ]);
-                              }).toList(),
+                              rows: [
+                                // ── Lesson Topic Row ──
+                                DataRow(
+                                  color: MaterialStateProperty.all(AppColors.background),
+                                  cells: [
+                                    DataCell(
+                                      Text("BÀI DẠY", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 12)),
+                                    ),
+                                    ..._weekDays.map((d) {
+                                      String dateKey = DateFormat('yyyy-MM-dd').format(d);
+                                      String topic = _lessonTopics[dateKey] ?? "-";
+                                      return DataCell(
+                                        Tooltip(
+                                          message: topic,
+                                          child: Container(
+                                            constraints: const BoxConstraints(maxWidth: 100),
+                                            child: Text(
+                                              topic,
+                                              style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.textSecondary),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ],
+                                ),
+                                // ── Student Rows ──
+                                ..._studentsList.map((s) {
+                                  String cId = s['child_id'];
+                                  String name = "${s['last_name']} ${s['first_name']}";
+                                  return DataRow(cells: [
+                                    DataCell(
+                                      Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                    ),
+                                    ..._weekDays.map((d) {
+                                      String dateKey = DateFormat('yyyy-MM-dd').format(d);
+                                      return DataCell(
+                                        _buildStatusWidget(_attendanceDict['${cId}_$dateKey']),
+                                        onTap: () => _showEditSheet(cId, dateKey, name),
+                                      );
+                                    }),
+                                  ]);
+                                }).toList(),
+                              ],
                             ),
                           ),
                         ),
@@ -419,5 +453,3 @@ class _AttendanceStatsScreenState extends State<AttendanceStatsScreen> {
     return list[w - 1];
   }
 }
-
-
