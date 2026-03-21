@@ -18,7 +18,9 @@ class _AttendanceManualScreenState extends State<AttendanceManualScreen> {
   final AttendanceService _attendanceService = AttendanceService();
   List<dynamic> _children = [];
   bool _isLoading = true;
+  bool _allSelected = false;
   final Map<String, bool> _attendanceMap = {};
+  final TextEditingController _lessonTopicController = TextEditingController();
 
   @override
   void initState() {
@@ -40,6 +42,17 @@ class _AttendanceManualScreenState extends State<AttendanceManualScreen> {
   }
 
   Future<void> _saveAttendance() async {
+    if (_lessonTopicController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Vui lòng nhập nội dung bài dạy hôm nay!"),
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
     int successCount = 0;
 
@@ -50,6 +63,7 @@ class _AttendanceManualScreenState extends State<AttendanceManualScreen> {
           classId: int.parse(widget.classId),
           isPresent: entry.value,
           status: entry.value ? "Có mặt" : "Vắng không phép",
+          lessonTopic: _lessonTopicController.text.trim(),
         );
         if (res['success'] == true) successCount++;
       }
@@ -91,14 +105,39 @@ class _AttendanceManualScreenState extends State<AttendanceManualScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  color: AppColors.surfaceVariant,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  color: AppColors.surface,
+                  child: Column(
                     children: [
-                      Text("Tổng sĩ số: ${_children.length}", style: AppTextStyles.titleSmall),
-                      Text(
-                        "Ngày: ${widget.date.day.toString().padLeft(2, '0')}/${widget.date.month.toString().padLeft(2, '0')}/${widget.date.year}",
-                        style: AppTextStyles.bodyMedium,
+                      TextField(
+                        controller: _lessonTopicController,
+                        decoration: AppDecorations.inputDecoration(
+                          label: "Nội dung bài dạy hôm nay (bắt buộc)",
+                          prefixIcon: Icons.menu_book_rounded,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Tổng sĩ số: ${_children.length}", style: AppTextStyles.titleSmall),
+                          Row(
+                            children: [
+                              const Text("Tích tất cả", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                              Checkbox(
+                                value: _allSelected,
+                                activeColor: AppColors.primary,
+                                onChanged: (v) {
+                                  setState(() {
+                                    _allSelected = v!;
+                                    for (var child in _children) {
+                                      _attendanceMap[child['id'].toString()] = _allSelected;
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),

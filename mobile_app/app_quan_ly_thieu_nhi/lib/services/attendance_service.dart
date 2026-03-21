@@ -32,13 +32,9 @@ class AttendanceService {
   }
 }
 
-  Future<Map<String, dynamic>> manualMark({
-    required String childId,
-    required int classId,
-    required bool isPresent,
-    required String status,
     String? reason,
     String? attendanceDate,
+    String? lessonTopic,
   }) async {
     try {
       final response = await http.post(
@@ -51,6 +47,7 @@ class AttendanceService {
           'status': status,
           'reason': reason ?? "",
           'attendance_date': attendanceDate ?? DateTime.now().toIso8601String().split('T')[0],
+          'lesson_topic': lessonTopic ?? "",
         }),
       );
       return jsonDecode(response.body);

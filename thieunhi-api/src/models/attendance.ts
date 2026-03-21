@@ -6,9 +6,9 @@ class AttendanceModel {
         const query = `
             INSERT INTO attendance (
                 child_id, class_id, is_present, status, reason, marked_by,
-                attendance_date, check_in_time
+                attendance_date, check_in_time, lesson_topic
             )
-            VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7::date, CURRENT_DATE), CURRENT_TIME)
+            VALUES ($1, $2, $3, $4, $5, $6, COALESCE($7::date, CURRENT_DATE), CURRENT_TIME, $8)
             ON CONFLICT (child_id, class_id, attendance_date) 
             DO UPDATE SET 
                 is_present = EXCLUDED.is_present,
@@ -16,6 +16,7 @@ class AttendanceModel {
                 check_in_time = CURRENT_TIME,
                 marked_by = EXCLUDED.marked_by,
                 reason = EXCLUDED.reason,
+                lesson_topic = EXCLUDED.lesson_topic,
                 updated_at = CURRENT_TIMESTAMP
             RETURNING *;
         `;
@@ -26,7 +27,8 @@ class AttendanceModel {
             data.status, 
             data.reason || null, 
             data.marked_by,
-            data.attendance_date || null
+            data.attendance_date || null,
+            data.lesson_topic || null
         ];
         
         const result = await pool.query(query, values);

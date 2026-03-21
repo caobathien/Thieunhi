@@ -36,7 +36,7 @@ class AttendanceController {
     }
     async manualMark(req: Request, res: Response) {
         try {
-            const { child_id, class_id, status, reason, attendance_date } = req.body;
+            const { child_id, class_id, status, reason, attendance_date, lesson_topic } = req.body;
             const currentUser = req.user;
             const marked_by = currentUser?.id;
 
@@ -59,7 +59,7 @@ class AttendanceController {
             }
 
             const result = await AttendanceService.markManual(
-                { child_id, class_id, status, reason, attendance_date },
+                { child_id, class_id, status, reason, attendance_date, lesson_topic },
                 marked_by as string
             );
             return sendSuccess(res, 'Cập nhật thành công', result);
