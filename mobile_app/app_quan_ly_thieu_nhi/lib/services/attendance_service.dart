@@ -32,6 +32,11 @@ class AttendanceService {
   }
 }
 
+  Future<Map<String, dynamic>> manualMark({
+    required String childId,
+    required int classId,
+    required bool isPresent,
+    required String status,
     String? reason,
     String? attendanceDate,
     String? lessonTopic,

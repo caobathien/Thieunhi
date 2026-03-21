@@ -8,5 +8,6 @@ export interface IAttendance {
     status: 'Có mặt' | 'Vắng có phép' | 'Vắng không phép' | 'Muộn';
     reason?: string;
     marked_by: string;
+    lesson_topic?: string;
     updated_at?: Date;
 }
