@@ -23,19 +23,40 @@ class ClassModel {
     // Tạo lớp mới
     async create(data: IClass) {
         const query = `
-            INSERT INTO classes (class_name,room_number,academic_year,academic_year_id,total_capacity,main_leader_id,status,description)
-            SELECT $1,$2,$3,ay.id,$4,$5,$6,$7
-             FROM academic_years ay
-            JOIN system_settings ss
-          ON ss.value = ay.academic_year
-            WHERE ss.key = 'current_academic_year'
-        LIMIT 1
+            INSERT INTO classes (
+                class_name,
+                room_number,
+                academic_year,
+                academic_year_id,
+                total_capacity,
+                main_leader_id,
+                status,
+                description,
+                start_time
+            )
+            SELECT
+                $1,
+                $2,
+                ay.name,
+                ay.id,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7
+            FROM academic_years ay
+            WHERE ay.is_current = true
+            LIMIT 1
             RETURNING *;
         `;
         const values = [
-            data.class_name, data.room_number, data.academic_year, 
-            data.total_capacity || 40, data.main_leader_id, 
-            data.status || 'active', data.description
+            data.class_name, 
+            data.room_number, 
+            data.total_capacity || 40, 
+            data.main_leader_id, 
+            data.status || 'active', 
+            data.description,
+            data.start_time || '08:00:00'
         ];
         const result = await pool.query(query, values);
         return result.rows[0];
@@ -47,18 +68,17 @@ class ClassModel {
             UPDATE classes 
             SET class_name = COALESCE($1, class_name),
                 room_number = COALESCE($2, room_number),
-                academic_year = COALESCE($3, academic_year),
-                academic_year_id = COALESCE($4, (SELECT id FROM academic_years WHERE academic_year = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1))),
-                total_capacity = COALESCE($5, total_capacity),
-                main_leader_id = COALESCE($6, main_leader_id),
-                status = COALESCE($7, status),
-                description = COALESCE($8, description)
-            WHERE id = $9 RETURNING *;
+                total_capacity = COALESCE($3, total_capacity),
+                main_leader_id = COALESCE($4, main_leader_id),
+                status = COALESCE($5, status),
+                description = COALESCE($6, description),
+                start_time = COALESCE($7, start_time)
+            WHERE id = $8 RETURNING *;
         `;
         const values = [
-            data.class_name, data.room_number, data.academic_year,
-            data.academic_year_id, data.total_capacity, data.main_leader_id, 
-            data.status, data.description, id
+            data.class_name, data.room_number, data.total_capacity, 
+            data.main_leader_id, data.status, data.description, 
+            data.start_time, id
         ];
         const result = await pool.query(query, values);
         return result.rows[0];

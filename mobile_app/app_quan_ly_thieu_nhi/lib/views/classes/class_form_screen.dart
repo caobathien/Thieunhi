@@ -15,7 +15,7 @@ class _ClassFormScreenState extends State<ClassFormScreen> {
   final ClassService _classService = ClassService();
 
   late TextEditingController _className, _roomNumber, _academicYear;
-  late TextEditingController _capacity, _description;
+  late TextEditingController _capacity, _description, _startTime;
   bool _isSubmitting = false;
 
   @override
@@ -27,6 +27,22 @@ class _ClassFormScreenState extends State<ClassFormScreen> {
     _academicYear = TextEditingController(text: d?['academic_year'] ?? '2025-2026');
     _capacity = TextEditingController(text: d?['total_capacity']?.toString() ?? '40');
     _description = TextEditingController(text: d?['description'] ?? '');
+    _startTime = TextEditingController(text: d?['start_time'] ?? '08:00:00');
+  }
+
+  Future<void> _selectTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+        hour: int.tryParse(_startTime.text.split(':')[0]) ?? 8,
+        minute: int.tryParse(_startTime.text.split(':')[1]) ?? 0,
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _startTime.text = "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}:00";
+      });
+    }
   }
 
   Future<void> _submitForm() async {
@@ -40,6 +56,7 @@ class _ClassFormScreenState extends State<ClassFormScreen> {
       "academic_year": _academicYear.text.trim(),
       "total_capacity": int.tryParse(_capacity.text) ?? 40,
       "description": _description.text.trim(),
+      "start_time": _startTime.text.trim(),
     };
 
     final result = isEdit
@@ -133,6 +150,13 @@ class _ClassFormScreenState extends State<ClassFormScreen> {
                                 if (n == null || n <= 0) return "Phải lớn hơn 0";
                                 return null;
                               },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _startTime,
+                              readOnly: true,
+                              onTap: _selectTime,
+                              decoration: AppDecorations.inputDecoration(label: "Giờ bắt đầu", prefixIcon: Icons.access_time_rounded),
                             ),
                             const SizedBox(height: 16),
                             TextFormField(

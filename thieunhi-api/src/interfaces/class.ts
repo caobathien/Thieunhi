@@ -8,5 +8,6 @@ export interface IClass {
     main_leader_id?: string; // UUID của Huynh trưởng
     status: 'active' | 'inactive' | 'closed';
     description?: string;
+    start_time?: string; // Giờ bắt đầu (HH:mm:ss)
     created_at?: Date;
 }
