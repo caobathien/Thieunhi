@@ -30,7 +30,56 @@ class AttendanceService {
   } catch (e) {
     return {"success": false, "message": "Lỗi kết nối: $e"};
   }
-}
+
+  // Lấy danh sách thiếu nhi có nguy cơ (nghỉ >= 3 buổi)
+  Future<List<Map<String, dynamic>>> getAtRiskStudents(int classId) async {
+    try {
+      // Xác định khoảng thời gian niên khóa hiện tại (Từ tháng 8 năm trước dến nay)
+      final now = DateTime.now();
+      final year = now.month >= 8 ? now.year : now.year - 1;
+      final startDate = "$year-08-01";
+      final endDate = now.toIso8601String().split('T')[0];
+
+      final statsResponse = await getAttendanceStats(classId, startDate, endDate);
+      if (statsResponse['success'] == true) {
+        final List data = statsResponse['data'] ?? [];
+        
+        // Nhóm theo child_id và đếm số buổi vắng
+        Map<String, Map<String, dynamic>> atRiskMap = {};
+        
+        for (var record in data) {
+          final childId = record['child_id'].toString();
+          final isPresent = record['is_present'] == true;
+          
+          if (!isPresent) {
+            if (!atRiskMap.containsKey(childId)) {
+              atRiskMap[childId] = {
+                'child_id': childId,
+                'full_name': "${record['last_name']} ${record['first_name']}",
+                'baptismal_name': record['baptismal_name'] ?? '',
+                'absence_count': 0,
+                'last_absence': record['attendance_date'],
+              };
+            }
+            atRiskMap[childId]!['absence_count']++;
+            // Cập nhật ngày vắng gần nhất
+            if (record['attendance_date'].compareTo(atRiskMap[childId]!['last_absence']) > 0) {
+              atRiskMap[childId]!['last_absence'] = record['attendance_date'];
+            }
+          }
+        }
+        
+        // Lọc những em vắng >= 3 buổi
+        return atRiskMap.values
+            .where((student) => student['absence_count'] >= 3)
+            .toList()
+          ..sort((a, b) => b['absence_count'].compareTo(a['absence_count']));
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
 
   Future<Map<String, dynamic>> manualMark({
     required String childId,

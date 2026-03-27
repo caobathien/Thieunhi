@@ -7,7 +7,7 @@ import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import '../views/attendances/attendance_selection_screen.dart';
 import '../views/classes/class_list_screen.dart';
-import '../views/profile/profile_screen.dart'; // Tab thứ 4
+import '../views/profile/profile_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -60,9 +60,8 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    // Cửa sổ hiển thị phụ thuộc vào vai trò
     final bool isUserOnly = _userRole == 'user';
-    
+
     final List<Widget> screens = [
       HomeScreen(userProfile: _userProfile, userRole: _userRole),
       if (!isUserOnly) AttendanceSelectionScreen(userRole: _userRole, userProfile: _userProfile),
@@ -72,7 +71,6 @@ class _MainWrapperState extends State<MainWrapper> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      // AppBar chính (chỉ hiển thị cho tab 1, 2, 3)
       appBar: (_selectedIndex == 1 || _selectedIndex == 2) && !isUserOnly ? AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).cardColor,
@@ -93,7 +91,7 @@ class _MainWrapperState extends State<MainWrapper> {
           Consumer<NotificationController>(
             builder: (context, controller, _) {
               if (controller.latestNotification == null) return const SizedBox.shrink();
-              
+
               final note = controller.latestNotification!;
               return Positioned(
                 top: 10,
@@ -112,11 +110,11 @@ class _MainWrapperState extends State<MainWrapper> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.secondary.withValues(alpha: 0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -127,10 +125,10 @@ class _MainWrapperState extends State<MainWrapper> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: AppColors.accent.withValues(alpha: 0.25),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(note.icon, color: Colors.white, size: 20),
+                          child: Icon(note.icon, color: AppColors.accent, size: 20),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -144,7 +142,7 @@ class _MainWrapperState extends State<MainWrapper> {
                               ),
                               Text(
                                 note.message,
-                                style: const TextStyle(color: Colors.white, fontSize: 12),
+                                style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -167,52 +165,73 @@ class _MainWrapperState extends State<MainWrapper> {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(top: 8, bottom: 8),
         decoration: BoxDecoration(
           color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
+              color: AppColors.primary.withValues(alpha: 0.06),
+              blurRadius: 20,
+              offset: const Offset(0, -6),
             ),
           ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: AppColors.primaryDeep,
-          unselectedItemColor: AppColors.textLight,
-          selectedLabelStyle: AppTextStyles.labelLarge.copyWith(fontSize: 10, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(fontSize: 10),
-          elevation: 0,
-          items: [
-            const BottomNavigationBarItem(
-              icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.grid_view_rounded)), 
-              activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.grid_view_rounded)), 
-              label: "Trang chủ"
-            ),
-            if (!isUserOnly)
-              const BottomNavigationBarItem(
-                icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.qr_code_scanner_rounded)), 
-                activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.qr_code_scanner_rounded)), 
-                label: "Điểm danh"
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.navInactive,
+            selectedLabelStyle: AppTextStyles.labelLarge.copyWith(fontSize: 11, fontWeight: FontWeight.w600),
+            unselectedLabelStyle: AppTextStyles.labelLarge.copyWith(fontSize: 11),
+            elevation: 0,
+            items: [
+              _buildNavItem(Icons.home_outlined, Icons.home_rounded, "Trang chủ"),
+              if (!isUserOnly)
+                _buildNavItem(Icons.qr_code_scanner_outlined, Icons.qr_code_scanner_rounded, "Điểm danh"),
+              _buildNavItem(Icons.school_outlined, Icons.school_rounded, "Lớp học"),
+              _buildNavItem(Icons.person_outline_rounded, Icons.person_rounded, "Cá nhân"),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem(IconData icon, IconData activeIcon, String label) {
+    return BottomNavigationBarItem(
+      icon: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Icon(icon),
+      ),
+      activeIcon: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(activeIcon),
+            const SizedBox(height: 2),
+            Container(
+              width: 5,
+              height: 5,
+              decoration: const BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
               ),
-            const BottomNavigationBarItem(
-              icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.class_outlined)), 
-              activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.class_rounded)), 
-              label: "Lớp học"
-            ),
-            const BottomNavigationBarItem(
-              icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.person_rounded)), 
-              activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.person_rounded)), 
-              label: "Cá nhân"
             ),
           ],
         ),
       ),
+      label: label,
     );
   }
 }

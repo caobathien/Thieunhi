@@ -279,7 +279,7 @@ class _TermSummaryScreenState extends State<TermSummaryScreen> {
         const SizedBox(width: 12),
         Expanded(child: _statCard("Đạt", "$passed", Icons.check_circle_outline, AppColors.success)),
         const SizedBox(width: 12),
-        Expanded(child: _statCard("Điểm TB", avgScore.toStringAsFixed(1), Icons.trending_up_rounded, AppColors.warning)),
+        Expanded(child: _statCard("Điểm TB", "${avgScore.toStringAsFixed(1)}/10", Icons.trending_up_rounded, AppColors.warning)),
       ],
     );
   }
@@ -390,7 +390,15 @@ class _TermSummaryScreenState extends State<TermSummaryScreen> {
                 style: TextStyle(color: isPassed ? AppColors.success : AppColors.error, fontWeight: FontWeight.bold, fontSize: 13),
               ),
             ),
-            title: Text(item['full_name'] ?? "N/A", style: AppTextStyles.titleSmall),
+            title: Row(
+              children: [
+                Expanded(child: Text(item['full_name'] ?? "N/A", style: AppTextStyles.titleSmall)),
+                Text(
+                  "/10",
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textLight.withValues(alpha: 0.5)),
+                ),
+              ],
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

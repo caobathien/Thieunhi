@@ -39,7 +39,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _isLoading = true);
     }
     
-    // Kiểm tra role từ widget hoặc cached data nếu có
     final String role = widget.userProfile?['role'] ?? widget.userProfile?['account_role'] ?? 'user';
     final bool isUserOnly = role.toLowerCase() == 'user';
 
@@ -66,21 +65,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        body: Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
       );
     }
 
     final String rawRole = _profileData?['account_role'] ?? _profileData?['role'] ?? 'user';
     final bool isAdmin = rawRole.toLowerCase() == 'admin';
     final bool isUser = rawRole.toLowerCase() == 'user';
-    
-    // hasLeaderProfile chỉ true nếu là leader/admin và có dữ liệu ID từ bảng leaders_profile
     final bool hasLeaderProfile = !isUser && _profileData?['id'] != null; 
     final String avatarUrl = _profileData?['avatar_url'] ?? '';
-    
-    // Logic hiển thị tên:
-    // Nếu là admin: ưu tiên lấy từ bảng users (account_full_name)
-    // Nếu là leader: lấy Christian Name + Full Name (LP)
     final String accountName = _profileData?['account_full_name'] ?? _profileData?['full_name'] ?? '---';
     final String leaderFullName = _profileData?['full_name'] ?? '';
     final String christianName = _profileData?['christian_name'] ?? '';
@@ -89,10 +82,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? accountName.trim()
         : "$christianName $leaderFullName".trim();
 
-    if (displayFullName.isEmpty || displayFullName == '---') {
-        // Fallback cuối cùng nếu mọi thứ đều trống
-    }
-    
     final String displayRole = isAdmin 
         ? "Quản trị viên" 
         : (hasLeaderProfile 
@@ -101,179 +90,225 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text("Tài khoản"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {}, // Future settings
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            // ── Profile Header Card ──
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: AppDecorations.card,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // ── Navy Gradient Profile Header ──
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.only(top: 60, bottom: 32),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0F2440), Color(0xFF1E3A5F)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+              ),
               child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary.withAlpha(50), width: 2),
-                    ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: AppColors.primaryLight,
-                      backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
-                      child: avatarUrl.isEmpty ? Icon(Icons.person_outline, size: 40, color: AppColors.primary) : null,
+                  // ── Top Bar ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(width: 48),
+                        Text("Tài khoản", style: AppTextStyles.titleMedium.copyWith(color: Colors.white)),
+                        IconButton(
+                          icon: Icon(Icons.settings_outlined, color: Colors.white.withValues(alpha: 0.7)),
+                          onPressed: () {},
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(displayFullName, style: AppTextStyles.titleLarge),
+                  // ── Avatar with Gold Ring ──
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.6), width: 2.5),
+                    ),
+                    child: CircleAvatar(
+                      radius: 48,
+                      backgroundColor: Colors.white.withValues(alpha: 0.15),
+                      backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                      child: avatarUrl.isEmpty 
+                          ? Icon(Icons.person_outline, size: 40, color: Colors.white.withValues(alpha: 0.7)) 
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(displayFullName, style: AppTextStyles.titleLarge.copyWith(color: Colors.white)),
                   const SizedBox(height: 6),
-                  Text(displayRole, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textLight)),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (hasLeaderProfile) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                    ),
+                    child: Text(displayRole, style: AppTextStyles.caption.copyWith(color: AppColors.accent, fontWeight: FontWeight.w500)),
+                  ),
+                  const SizedBox(height: 24),
+                  // ── Quick Actions ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (hasLeaderProfile) ...[
+                          _buildQuickAction(
+                            icon: Icons.badge_outlined,
+                            label: "Hồ sơ",
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => EditProfileScreen(initialData: _profileData)),
+                              ).then((value) {
+                                if (value == true) _fetchProfile();
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 24),
+                        ],
                         _buildQuickAction(
-                          icon: Icons.badge_outlined,
-                          label: "Hồ sơ",
+                          icon: Icons.manage_accounts_outlined,
+                          label: "Tài khoản",
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => EditProfileScreen(initialData: _profileData)),
+                              MaterialPageRoute(builder: (_) => EditAccountScreen(initialData: _profileData)),
                             ).then((value) {
                               if (value == true) _fetchProfile();
                             });
                           },
                         ),
                         const SizedBox(width: 24),
+                        _buildQuickAction(
+                          icon: Icons.lock_reset_rounded,
+                          label: "Mật khẩu",
+                          onTap: () => showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const ChangePasswordSheet(),
+                          ),
+                        ),
                       ],
-                      _buildQuickAction(
-                        icon: Icons.manage_accounts_outlined,
-                        label: "Tài khoản",
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => EditAccountScreen(initialData: _profileData)),
-                          ).then((value) {
-                            if (value == true) _fetchProfile();
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 24),
-                      _buildQuickAction(
-                        icon: Icons.lock_reset_rounded,
-                        label: "Mật khẩu",
-                        onTap: () => showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => const ChangePasswordSheet(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Body Sections ──
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  _buildSection(
+                    "Tài khoản hệ thống",
+                    [
+                      _buildInfoTile(Icons.person_pin_rounded, "Họ và tên đăng ký", _profileData?['account_full_name'] ?? _profileData?['full_name']),
+                      _buildInfoTile(Icons.alternate_email_rounded, "Tên đăng nhập", _profileData?['username']),
+                      _buildInfoTile(Icons.phone_outlined, "Số điện thoại đăng ký", _profileData?['account_phone'] ?? _profileData?['phone']),
+                      _buildInfoTile(Icons.email_outlined, "Email tài khoản", _profileData?['account_gmail'] ?? _profileData?['gmail']),
+                      _buildInfoTile(Icons.calendar_month_rounded, "Ngày tham gia", _profileData?['account_created_at'] ?? _profileData?['created_at'], isLast: true),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  if (!isAdmin && hasLeaderProfile) ...[
+                    _buildSection(
+                      "Thông tin Huynh trưởng",
+                      [
+                        _buildInfoTile(Icons.church_outlined, "Tên Thánh", _profileData?['christian_name']),
+                        _buildInfoTile(Icons.military_tech_outlined, "Cấp bậc", _profileData?['rank']),
+                        _buildInfoTile(Icons.work_outline_rounded, "Chức vụ", _profileData?['position']),
+                        _buildInfoTile(Icons.cake_outlined, "Ngày sinh", _profileData?['dob']),
+                        _buildInfoTile(Icons.calendar_today_outlined, "Ngày nhận việc", _profileData?['join_date'], isLast: true),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  _buildSection(
+                    "Cài đặt & Giao diện",
+                    [
+                      Consumer<ThemeController>(
+                        builder: (context, theme, _) => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryLight,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(theme.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded, color: AppColors.primary, size: 18),
+                                ),
+                                const SizedBox(width: 14),
+                                Text("Chế độ tối", style: AppTextStyles.titleSmall.copyWith(fontSize: 14)),
+                              ],
+                            ),
+                            Switch(
+                              value: theme.isDarkMode,
+                              onChanged: (_) => theme.toggleTheme(),
+                              activeColor: AppColors.accent,
+                              activeTrackColor: AppColors.accentLight,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
-            // ── Account Sections ──
-            _buildSection(
-              "Tài khoản hệ thống",
-              [
-                _buildInfoTile(Icons.person_pin_rounded, "Họ và tên đăng ký", _profileData?['account_full_name'] ?? _profileData?['full_name']),
-                _buildInfoTile(Icons.alternate_email_rounded, "Tên đăng nhập", _profileData?['username']),
-                _buildInfoTile(Icons.phone_outlined, "Số điện thoại đăng ký", _profileData?['account_phone'] ?? _profileData?['phone']),
-                _buildInfoTile(Icons.email_outlined, "Email tài khoản", _profileData?['account_gmail'] ?? _profileData?['gmail']),
-                _buildInfoTile(Icons.calendar_month_rounded, "Ngày tham gia", _profileData?['account_created_at'] ?? _profileData?['created_at'], isLast: true),
-              ],
-            ),
-            const SizedBox(height: 24),
+                  if (!isAdmin && hasLeaderProfile) ...[
+                    _buildSection(
+                      "Ghi chú & Thành tích",
+                      [
+                        _buildInfoTile(Icons.stars_outlined, "Khen thưởng", _profileData?['award_notes']),
+                        _buildInfoTile(Icons.notes_rounded, "Ghi chú thêm", _profileData?['notes'], isLast: true),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                  ],
 
-            if (!isAdmin && hasLeaderProfile) ...[
-              _buildSection(
-                "Thông tin Huynh trưởng",
-                [
-                  _buildInfoTile(Icons.church_outlined, "Tên Thánh", _profileData?['christian_name']),
-                  _buildInfoTile(Icons.military_tech_outlined, "Cấp bậc", _profileData?['rank']),
-                  _buildInfoTile(Icons.work_outline_rounded, "Chức vụ", _profileData?['position']),
-                  _buildInfoTile(Icons.cake_outlined, "Ngày sinh", _profileData?['dob']),
-                  _buildInfoTile(Icons.calendar_today_outlined, "Ngày nhận việc", _profileData?['join_date'], isLast: true),
-                ],
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            _buildSection(
-              "Cài đặt & Giao diện",
-              [
-                Consumer<ThemeController>(
-                  builder: (context, theme, _) => Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(theme.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded, color: AppColors.primary),
-                          const SizedBox(width: 16),
-                          Text("Chế độ tối", style: AppTextStyles.titleSmall.copyWith(fontSize: 14)),
-                        ],
+                  // ── Logout Button ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: ElevatedButton.icon(
+                      onPressed: widget.onLogout,
+                      icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
+                      label: const Text("Đăng xuất"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                        foregroundColor: Colors.white,
+                        textStyle: AppTextStyles.labelLarge.copyWith(
+                          color: Colors.white,
+                          inherit: true,
+                        ),
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+                        elevation: 0,
                       ),
-                      Switch(
-                        value: theme.isDarkMode,
-                        onChanged: (_) => theme.toggleTheme(),
-                        activeThumbColor: AppColors.primary,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            if (!isAdmin && hasLeaderProfile) ...[
-              _buildSection(
-                "Ghi chú & Thành tích",
-                [
-                  _buildInfoTile(Icons.stars_outlined, "Khen thưởng", _profileData?['award_notes']),
-                  _buildInfoTile(Icons.notes_rounded, "Ghi chú thêm", _profileData?['notes'], isLast: true),
+                  const SizedBox(height: 40),
                 ],
               ),
-              const SizedBox(height: 32),
-            ],
-
-            // Logout Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: ElevatedButton.icon(
-                onPressed: widget.onLogout,
-                icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                label: const Text("Đăng xuất"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  textStyle: AppTextStyles.labelLarge.copyWith(
-                    color: Colors.white,
-                    inherit: true, // Đảm bảo đồng nhất thuộc tính inherit để tránh lỗi interpolation khi đổi theme
-                  ),
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-              ),
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -286,14 +321,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 22),
+            child: Icon(icon, color: AppColors.accent, size: 22),
           ),
           const SizedBox(height: 8),
-          Text(label, style: AppTextStyles.labelLarge.copyWith(fontSize: 12)),
+          Text(label, style: AppTextStyles.caption.copyWith(color: Colors.white.withValues(alpha: 0.9), fontSize: 11)),
         ],
       ),
     );
@@ -305,7 +340,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 12),
-          child: Text(title, style: AppTextStyles.sectionHeader),
+          child: Text(title, style: AppTextStyles.sectionHeader.copyWith(color: AppColors.textSecondary)),
         ),
         Container(
           padding: const EdgeInsets.all(20),
@@ -321,13 +356,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.primary),
-          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 18, color: AppColors.primary),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(fontSize: 11, color: AppColors.textLight, fontWeight: FontWeight.w500)),
+                Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textLight, fontSize: 11)),
                 const SizedBox(height: 2),
                 Text(value ?? "Chưa cập nhật", style: AppTextStyles.titleSmall.copyWith(fontSize: 14)),
               ],

@@ -14,18 +14,22 @@ class TermSummaryModel {
             [childId, classId, year]
         );
 
-        // Lấy điểm trung bình học tập (GPA)
-        const gradeRes = await pool.query(
-            `SELECT SUM(score * weight) / SUM(weight) as gpa
-                FROM grades
-                WHERE child_id = $1 AND class_id = $2 AND term = $4 AND academic_year = $3`,
-            [childId, classId, year, term]
-        );
+        // Lấy điểm trung bình học tập (GPA) từ bảng grades theo học kỳ
+        let gpaQuery = '';
+        if (term === 'HK1') {
+            gpaQuery = `SELECT (midterm_score_k1 + final_score_k1) / 2 as gpa FROM grades WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`;
+        } else if (term === 'HK2') {
+            gpaQuery = `SELECT (midterm_score_k2 + final_score_k2) / 2 as gpa FROM grades WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`;
+        } else { // CaNam
+            gpaQuery = `SELECT ((midterm_score_k1 + final_score_k1) / 2 + (midterm_score_k2 + final_score_k2) / 2) / 2 as gpa FROM grades WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`;
+        }
+
+        const gradeRes = await pool.query(gpaQuery, [childId, classId, year]);
 
         const { present, total } = attendanceRes.rows[0];
-        const academic_score = parseFloat(gradeRes.rows[0].gpa) || 0;
+        const academic_score = gradeRes.rows.length > 0 ? parseFloat(gradeRes.rows[0].gpa) || 0 : 0;
         
-        // CHIA 2: Quy đổi chuyên cần sang thang điểm 10 và cộng trung bình
+        // CHƯA CHIA 2: Quy đổi chuyên cần sang thang điểm 10 và cộng trung bình
         const attendance_score = total > 0 ? (parseInt(present) / parseInt(total)) * 10 : 0;
         const final_avg = (academic_score + attendance_score) / 2;
 

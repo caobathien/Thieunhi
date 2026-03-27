@@ -57,70 +57,56 @@ class _LoginScreenState extends State<LoginScreen>
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: AppColors.softBlueGradient,
+          gradient: AppColors.warmGradient,
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // ── Header / Logo ──
+                  // ── Logo with Gold Ring ──
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: 88,
+                    height: 88,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.5), width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.12),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
+                          color: AppColors.accent.withValues(alpha: 0.12),
+                          blurRadius: 30,
+                          offset: const Offset(0, 10),
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryLight,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(Icons.church_rounded, size: 32, color: AppColors.primary),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primary,
                       ),
+                      child: const Icon(Icons.church_rounded, size: 40, color: Colors.white),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   Text(
                     "Chào mừng trở lại",
-                    style: AppTextStyles.displayLarge.copyWith(fontSize: 28),
+                    style: AppTextStyles.displayLarge.copyWith(fontSize: 26, color: AppColors.primary),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     "Đăng nhập để quản lý giáo xứ hiệu quả",
-                    style: AppTextStyles.bodyMedium,
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textLight),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
 
-                  // ── Login Card ──
+                  // ── Login Card (Glassmorphism) ──
                   Container(
                     padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
+                    decoration: AppDecorations.glassmorphism,
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -128,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen>
                         children: [
                           Text(
                             "Tên đăng nhập / Email / Số điện thoại",
-                            style: AppTextStyles.labelLarge.copyWith(fontSize: 14, color: AppColors.textPrimary),
+                            style: AppTextStyles.labelLarge.copyWith(fontSize: 13, color: AppColors.textSecondary),
                           ),
                           const SizedBox(height: 10),
                           TextFormField(
@@ -138,18 +124,18 @@ class _LoginScreenState extends State<LoginScreen>
                               label: "Tên đăng nhập, Email hoặc SĐT",
                               prefixIcon: Icons.alternate_email_rounded,
                             ).copyWith(
-                              fillColor: AppColors.background,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide.none),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide.none),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                             ),
                             validator: (v) => v == null || v.isEmpty ? "Vui lòng nhập tài khoản" : null,
                           ),
                           const SizedBox(height: 20),
                           Text(
                             "Mật khẩu",
-                            style: AppTextStyles.labelLarge.copyWith(fontSize: 14, color: AppColors.textPrimary),
+                            style: AppTextStyles.labelLarge.copyWith(fontSize: 13, color: AppColors.textSecondary),
                           ),
                           const SizedBox(height: 10),
                           TextFormField(
@@ -168,11 +154,11 @@ class _LoginScreenState extends State<LoginScreen>
                                 onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                               ),
                             ).copyWith(
-                              fillColor: AppColors.background,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide.none),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide.none),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                             ),
                             validator: (v) => v == null || v.isEmpty ? "Vui lòng nhập mật khẩu" : null,
                           ),
@@ -183,13 +169,13 @@ class _LoginScreenState extends State<LoginScreen>
                               onPressed: () {},
                               child: Text(
                                 "Quên mật khẩu?",
-                                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryDeep, fontWeight: FontWeight.w600),
+                                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.accent, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ),
                           const SizedBox(height: 24),
-                          
-                          // Action Button
+
+                          // ── Gold Login Button ──
                           SizedBox(
                             width: double.infinity,
                             height: 56,
@@ -197,18 +183,18 @@ class _LoginScreenState extends State<LoginScreen>
                               onPressed: _isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
                                 elevation: 0,
                               ),
                               child: _isLoading
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 24,
                                       height: 24,
                                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                                     )
                                   : Text(
                                       "ĐĂNG NHẬP",
-                                      style: AppTextStyles.titleSmall.copyWith(color: Colors.white, letterSpacing: 1.0),
+                                      style: AppTextStyles.titleSmall.copyWith(color: Colors.white, letterSpacing: 1.5),
                                     ),
                             ),
                           ),
@@ -217,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // ── Register Link ──
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -228,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Text(
                           "Đăng ký ngay",
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.primaryDeep,
+                            color: AppColors.accent,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

@@ -13,26 +13,40 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   final TokenService _tokenService = TokenService();
 
   late AnimationController _mainController;
+  late AnimationController _glowController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _slideUpAnimation;
+  late Animation<double> _glowAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Tăng thời gian animation lên một chút cho mượt mà (1500ms)
     _mainController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1800),
     );
+
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _mainController, curve: const Interval(0, 0.5, curve: Curves.easeIn)),
+      CurvedAnimation(parent: _mainController, curve: const Interval(0, 0.4, curve: Curves.easeIn)),
     );
 
-    // Dùng Curves.easeOutCubic để logo nảy lên mềm mại hơn thay vì giật mạnh
-    _scaleAnimation = Tween<double>(begin: 0.6, end: 1).animate(
-      CurvedAnimation(parent: _mainController, curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic)),
+    _scaleAnimation = Tween<double>(begin: 0.7, end: 1).animate(
+      CurvedAnimation(parent: _mainController, curve: const Interval(0.1, 0.7, curve: Curves.easeOutCubic)),
+    );
+
+    _slideUpAnimation = Tween<double>(begin: 30, end: 0).animate(
+      CurvedAnimation(parent: _mainController, curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic)),
+    );
+
+    _glowAnimation = Tween<double>(begin: 0.3, end: 0.7).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
 
     _mainController.forward();
@@ -40,11 +54,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   void _navigateToNext() async {
-    // Thời gian chờ ở splash screen
-    await Future.delayed(const Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 2800));
     final token = await _tokenService.getToken();
     if (!mounted) return;
-    
+
     if (token != null && token.isNotEmpty) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {
@@ -55,88 +68,136 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void dispose() {
     _mainController.dispose();
+    _glowController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // ── Modern Logo Icon ──
-                Container(
-                  width: 120,
-                  height: 120,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0F2440), Color(0xFF1E3A5F), Color(0xFF2E5A8F)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // ── Gold Glow Effect (behind logo) ──
+            AnimatedBuilder(
+              animation: _glowAnimation,
+              builder: (context, child) {
+                return Container(
+                  width: 200,
+                  height: 200,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(32),
+                    shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        blurRadius: 40,
-                        offset: const Offset(0, 16),
+                        color: AppColors.accent.withValues(alpha: _glowAnimation.value * 0.3),
+                        blurRadius: 80,
+                        spreadRadius: 20,
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1), 
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: const Icon(
-                        Icons.church_rounded,
-                        size: 44,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // ── App Branding ──
-                Text(
-                  "TNTT MANAGER",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primaryDeep,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Phụng sự để yêu thương",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: AppColors.textLight,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                
-                const SizedBox(height: 60),
-                const SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    strokeCap: StrokeCap.round,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          ),
+
+            // ── Main Content ──
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: AnimatedBuilder(
+                  animation: _slideUpAnimation,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(0, _slideUpAnimation.value),
+                      child: child,
+                    );
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // ── Logo Container with Gold Ring ──
+                      Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.accent.withValues(alpha: 0.6), width: 2.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accent.withValues(alpha: 0.15),
+                              blurRadius: 40,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.12),
+                          ),
+                          child: const Icon(
+                            Icons.church_rounded,
+                            size: 56,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 36),
+
+                      // ── App Name ──
+                      Text(
+                        "TNTT MANAGER",
+                        style: AppTextStyles.displayLarge.copyWith(
+                          color: Colors.white,
+                          fontSize: 28,
+                          letterSpacing: 3.0,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // ── Tagline with Gold Color ──
+                      Text(
+                        "Phụng sự để yêu thương",
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.accent,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 64),
+
+                      // ── Loading Indicator with Gold Accent ──
+                      SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          strokeCap: StrokeCap.round,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.accent.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
