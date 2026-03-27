@@ -24,7 +24,7 @@ class ClassModel {
     async create(data: IClass) {
         const query = `
             INSERT INTO classes (class_name,room_number,academic_year,academic_year_id,total_capacity,main_leader_id,status,description)
-            SELECT$1,$2,$3,ay.id,$4,$5,$6,$7
+            SELECT $1,$2,$3,ay.id,$4,$5,$6,$7
              FROM academic_years ay
             JOIN system_settings ss
           ON ss.value = ay.academic_year
