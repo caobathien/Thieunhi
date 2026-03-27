@@ -57,7 +57,8 @@ class ChildController {
             const newChild = await ChildService.addChild(req.body);
             return sendSuccess(res, 'Thêm thiếu nhi thành công', newChild, 201);
         } catch (error: any) {
-            return sendError(res, error.message);
+            console.error("Lỗi thật sự từ DB là:", error);
+            return sendError(res, error.message, 500);
         }
     }
 

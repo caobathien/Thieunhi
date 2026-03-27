@@ -38,7 +38,16 @@ class ChildModel {
 
     // 4. Cập nhật thông tin
     async update(id: string, data: Partial<IChild>): Promise<IChild | null> {
-        const fields = Object.keys(data).filter(key => data[key as keyof IChild] !== undefined);
+        const allowedFields = [
+            'class_id', 'first_name', 'last_name', 'baptismal_name', 'birth_date', 
+            'gender', 'avatar_url', 'address', 'ten_thanh_bo', 'ho_va_ten_bo', 'sdt_bo', 
+            'ten_thanh_me', 'ho_va_ten_me', 'sdt_me', 'emergency_phone', 'ma_qr', 
+            'status', 'join_date', 'notes'
+        ];
+
+        const fields = Object.keys(data).filter(key => 
+            allowedFields.includes(key) && data[key as keyof IChild] !== undefined
+        );
         const values = fields.map(key => data[key as keyof IChild]);
 
         if (fields.length === 0) return null;

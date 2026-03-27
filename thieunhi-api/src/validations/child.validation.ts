@@ -12,10 +12,7 @@ export const createChildSchema = Joi.object({
   }),
   baptismal_name: Joi.string().allow('', null),
   birth_date: Joi.date().allow(null),
-  gender: Joi.alternatives().try(
-    Joi.string().valid('Nam', 'Nữ'),
-    Joi.boolean()
-  ).required().messages({
+  gender: Joi.any().required().messages({
     'any.required': 'Giới tính là bắt buộc',
   }),
   avatar_url: Joi.string().allow('', null),
@@ -31,7 +28,7 @@ export const createChildSchema = Joi.object({
   status: Joi.string().valid('active', 'inactive', 'graduated').default('active'),
   join_date: Joi.date().allow(null),
   notes: Joi.string().allow('', null),
-});
+}).unknown(true);
 
 export const updateChildSchema = Joi.object({
   class_id: Joi.number().integer(),
@@ -39,10 +36,7 @@ export const updateChildSchema = Joi.object({
   last_name: Joi.string(),
   baptismal_name: Joi.string().allow('', null),
   birth_date: Joi.date().allow(null),
-  gender: Joi.alternatives().try(
-    Joi.string().valid('Nam', 'Nữ'),
-    Joi.boolean()
-  ),
+  gender: Joi.any(),
   avatar_url: Joi.string().allow('', null),
   address: Joi.string().allow('', null),
   ten_thanh_bo: Joi.string().allow('', null),
@@ -56,4 +50,4 @@ export const updateChildSchema = Joi.object({
   status: Joi.string().valid('active', 'inactive', 'graduated'),
   join_date: Joi.date().allow(null),
   notes: Joi.string().allow('', null),
-});
+}).unknown(true);

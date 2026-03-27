@@ -12,9 +12,11 @@ export const validate = (schema: Schema, property: 'body' | 'query' | 'params' =
       const message = details.map((i) => i.message).join(',');
 
       console.log('❌ Validation Error:', message);
+      console.log('📦 Request Body:', JSON.stringify(req[property], null, 2));
       res.status(400).json({
         success: false,
         message,
+        details: process.env.NODE_ENV === 'development' ? details : undefined
       });
     }
   };
