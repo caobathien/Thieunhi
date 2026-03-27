@@ -23,10 +23,19 @@ class ChildService {
         if (!data.ma_qr) {
             data.ma_qr = `QR-${uuidv4().substring(0, 8).toUpperCase()}`;
         }
+        
+        // Convert boolean gender to string if necessary
+        if (typeof data.gender === 'boolean') {
+            data.gender = data.gender ? 'Nam' : 'Nữ';
+        }
+
         return await ChildModel.create(data);
     }
 
     async updateChild(id: string, data: Partial<IChild>) {
+        if (typeof data.gender === 'boolean') {
+            data.gender = data.gender ? 'Nam' : 'Nữ';
+        }
         const updated = await ChildModel.update(id, data);
         if (!updated) throw new Error('Không tìm thấy thiếu nhi để cập nhật');
         return updated;

@@ -6,16 +6,18 @@ class ChildModel {
         const query = `
             INSERT INTO children (
                 class_id, first_name, last_name, baptismal_name, birth_date, 
-                gender, address, ten_thanh_bo, ho_va_ten_bo, sdt_bo, 
-                ten_thanh_me, ho_va_ten_me, sdt_me, ma_qr, status
+                gender, avatar_url, address, ten_thanh_bo, ho_va_ten_bo, sdt_bo, 
+                ten_thanh_me, ho_va_ten_me, sdt_me, emergency_phone, ma_qr, 
+                status, join_date, notes
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
             RETURNING *;
         `;
         const values = [
             child.class_id, child.first_name, child.last_name, child.baptismal_name, child.birth_date,
-            child.gender, child.address, child.ten_thanh_bo, child.ho_va_ten_bo, child.sdt_bo,
-            child.ten_thanh_me, child.ho_va_ten_me, child.sdt_me, child.ma_qr, child.status || 'active'
+            child.gender, child.avatar_url, child.address, child.ten_thanh_bo, child.ho_va_ten_bo, child.sdt_bo,
+            child.ten_thanh_me, child.ho_va_ten_me, child.sdt_me, child.emergency_phone, child.ma_qr, 
+            child.status || 'active', child.join_date, child.notes
         ];
         const result = await db.query(query, values);
         return result.rows[0];

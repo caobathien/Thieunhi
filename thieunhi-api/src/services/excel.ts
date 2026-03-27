@@ -22,7 +22,12 @@ class ExcelService {
             { header: 'Tên Thánh Mẹ', key: 'ten_thanh_me', width: 15 },
             { header: 'Họ và tên Mẹ', key: 'ho_va_ten_me', width: 20 },
             { header: 'SĐT Mẹ', key: 'sdt_me', width: 15 },
+            { header: 'Mã QR', key: 'ma_qr', width: 15 },
             { header: 'Trạng thái', key: 'status', width: 10 },
+            { header: 'Ảnh đại diện', key: 'avatar_url', width: 20 },
+            { header: 'SĐT khẩn cấp', key: 'emergency_phone', width: 15 },
+            { header: 'Ngày nhập giáo', key: 'join_date', width: 15 },
+            { header: 'Ghi chú', key: 'notes', width: 30 },
         ];
 
         children.forEach(child => {
@@ -56,7 +61,12 @@ class ExcelService {
                 ten_thanh_me: row.getCell(12).value?.toString(),
                 ho_va_ten_me: row.getCell(13).value?.toString(),
                 sdt_me: row.getCell(14).value?.toString(),
-                status: row.getCell(15).value?.toString() || 'active',
+                ma_qr: row.getCell(15).value?.toString(),
+                status: row.getCell(16).value?.toString() || 'active',
+                avatar_url: row.getCell(17).value?.toString(),
+                emergency_phone: row.getCell(18).value?.toString(),
+                join_date: row.getCell(19).value ? new Date(row.getCell(19).value as any) : undefined,
+                notes: row.getCell(20).value?.toString(),
             };
             children.push(child);
         });

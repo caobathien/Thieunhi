@@ -12,22 +12,25 @@ export const createChildSchema = Joi.object({
   }),
   baptismal_name: Joi.string().allow('', null),
   birth_date: Joi.date().allow(null),
-  gender: Joi.string().valid('Nam', 'Nữ').required().messages({
+  gender: Joi.alternatives().try(
+    Joi.string().valid('Nam', 'Nữ'),
+    Joi.boolean()
+  ).required().messages({
     'any.required': 'Giới tính là bắt buộc',
   }),
+  avatar_url: Joi.string().allow('', null),
   address: Joi.string().allow('', null),
   ten_thanh_bo: Joi.string().allow('', null),
   ho_va_ten_bo: Joi.string().allow('', null),
-  sdt_bo: Joi.string().pattern(/^[0-9]{10,11}$/).allow('', null).messages({
-    'string.pattern.base': 'Số điện thoại bố không hợp lệ',
-  }),
+  sdt_bo: Joi.string().allow('', null),
   ten_thanh_me: Joi.string().allow('', null),
   ho_va_ten_me: Joi.string().allow('', null),
-  sdt_me: Joi.string().pattern(/^[0-9]{10,11}$/).allow('', null).messages({
-    'string.pattern.base': 'Số điện thoại mẹ không hợp lệ',
-  }),
+  sdt_me: Joi.string().allow('', null),
+  emergency_phone: Joi.string().allow('', null),
   ma_qr: Joi.string().allow('', null),
   status: Joi.string().valid('active', 'inactive', 'graduated').default('active'),
+  join_date: Joi.date().allow(null),
+  notes: Joi.string().allow('', null),
 });
 
 export const updateChildSchema = Joi.object({
@@ -36,14 +39,21 @@ export const updateChildSchema = Joi.object({
   last_name: Joi.string(),
   baptismal_name: Joi.string().allow('', null),
   birth_date: Joi.date().allow(null),
-  gender: Joi.string().valid('Nam', 'Nữ'),
+  gender: Joi.alternatives().try(
+    Joi.string().valid('Nam', 'Nữ'),
+    Joi.boolean()
+  ),
+  avatar_url: Joi.string().allow('', null),
   address: Joi.string().allow('', null),
   ten_thanh_bo: Joi.string().allow('', null),
   ho_va_ten_bo: Joi.string().allow('', null),
-  sdt_bo: Joi.string().pattern(/^[0-9]{10,11}$/).allow('', null),
+  sdt_bo: Joi.string().allow('', null),
   ten_thanh_me: Joi.string().allow('', null),
   ho_va_ten_me: Joi.string().allow('', null),
-  sdt_me: Joi.string().pattern(/^[0-9]{10,11}$/).allow('', null),
+  sdt_me: Joi.string().allow('', null),
+  emergency_phone: Joi.string().allow('', null),
   ma_qr: Joi.string().allow('', null),
   status: Joi.string().valid('active', 'inactive', 'graduated'),
+  join_date: Joi.date().allow(null),
+  notes: Joi.string().allow('', null),
 });
