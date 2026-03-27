@@ -12,6 +12,7 @@ import '../views/children/child_list_screen.dart';
 import '../views/attendances/attendance_selection_screen.dart';
 import '../views/notifications/notification_screen.dart';
 import '../services/leader_profile_service.dart';
+import '../services/attendance_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,13 +27,32 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final LeaderProfileService _leaderService = LeaderProfileService();
+  final AttendanceService _attendanceService = AttendanceService();
   final TextEditingController _searchController = TextEditingController();
   late Future<Map<String, dynamic>> _leadersFuture;
+  int _absenteeCount = 0;
 
   @override
   void initState() {
     super.initState();
     _leadersFuture = _leaderService.getAllLeaders();
+    _checkAbsenteeNotifications();
+  }
+
+  Future<void> _checkAbsenteeNotifications() async {
+    final classId = widget.userProfile?['assigned_class_id'];
+    if (classId != null) {
+      final atRisk = await _attendanceService.getAtRiskStudents(int.parse(classId.toString()));
+      if (mounted) {
+        setState(() {
+          _absenteeCount = atRisk.length;
+        });
+      }
+    } else if (widget.userRole == 'admin' || widget.userRole == 'leader-vip') {
+      // Admin could potentially fetch all, but for now we keep it to 0 or 
+      // implement a specific "all-class" version later.
+      setState(() => _absenteeCount = 0);
+    }
   }
 
   // ── Category colors (mỗi card 1 tông) ──
@@ -69,7 +89,10 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _leadersFuture = _leaderService.getAllLeaders();
           });
-          await _leadersFuture;
+          await Future.wait([
+            _leadersFuture,
+            _checkAbsenteeNotifications(),
+          ]);
         },
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -128,25 +151,48 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        // ── Notification Bell ──
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 22),
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (c) => NotificationScreen(
-                                  userProfile: widget.userProfile,
-                                  userRole: widget.userRole,
-                                ),
+                        // ── Notification Bell with Badge ──
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 22),
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (c) => NotificationScreen(
+                                      userProfile: widget.userProfile,
+                                      userRole: widget.userRole,
+                                    ),
+                                  ),
+                                ).then((_) => _checkAbsenteeNotifications()), // Re-check when coming back
                               ),
                             ),
-                          ),
+                            if (_absenteeCount > 0)
+                              Positioned(
+                                top: -2,
+                                right: -2,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.error,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                  child: Text(
+                                    _absenteeCount > 9 ? "9+" : "$_absenteeCount",
+                                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ],
                     ),

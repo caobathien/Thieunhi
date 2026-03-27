@@ -33,21 +33,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
     setState(() => _isLoading = true);
     
     _assignedClassId = widget.userProfile?['assigned_class_id']?.toString();
+    String? role = widget.userRole?.toLowerCase();
     
-    if (_assignedClassId == null && (widget.userRole == 'admin' || widget.userRole == 'leader-vip')) {
-      final classesResult = await _classService.getAllClasses();
-      if (classesResult['success'] == true && (classesResult['data'] as List).isNotEmpty) {
-        _assignedClassId = classesResult['data'][0]['id'].toString();
-        _assignedClassName = classesResult['data'][0]['class_name'];
-      }
-    } else if (_assignedClassId != null) {
-      _assignedClassName = "Lớp phụ trách"; 
-    }
-
     if (_assignedClassId != null) {
+      _assignedClassName = "Lớp phụ trách"; 
       final result = await _attendanceService.getAtRiskStudents(int.parse(_assignedClassId!));
       setState(() {
         _atRiskStudents = result;
+        _isLoading = false;
+      });
+    } else if (role == 'admin' || role == 'leader-vip') {
+      // Admin/VIP without assigned class: List ALL for now or show choosing UI
+      // For now, let's fetch summary of all classes (conceptual)
+      // or just show empty but with a message
+      _assignedClassName = "Tất cả các lớp (Admin)";
+      // To implement correctly, we'd need a multi-class fetcher
+      // For this fix, let's just avoid the "pick first class" trap
+      setState(() {
+        _atRiskStudents = []; 
         _isLoading = false;
       });
     } else {
@@ -99,22 +102,39 @@ class _NotificationScreenState extends State<NotificationScreen> {
           else if (_atRiskStudents.isEmpty)
             SliverFillRemaining(
               child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(28),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        shape: BoxShape.circle,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _assignedClassId == null ? Icons.info_outline_rounded : Icons.notifications_off_outlined,
+                          size: 56,
+                          color: AppColors.primary.withValues(alpha: 0.5),
+                        ),
                       ),
-                      child: Icon(Icons.notifications_off_outlined, size: 56, color: AppColors.primary.withValues(alpha: 0.5)),
-                    ),
-                    const SizedBox(height: 24),
-                    Text("Không có thông báo mới", style: AppTextStyles.titleSmall.copyWith(color: AppColors.textPrimary)),
-                    const SizedBox(height: 8),
-                    Text("Hiện không có em nào nghỉ quá 3 buổi.", style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textLight)),
-                  ],
+                      const SizedBox(height: 24),
+                      Text(
+                        _assignedClassId == null ? "Chưa chọn lớp" : "Không có thông báo mới",
+                        style: AppTextStyles.titleSmall.copyWith(color: AppColors.textPrimary),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _assignedClassId == null
+                            ? "Vui lòng kiểm tra lại thông tin phân công của bạn để xem danh sách vắng."
+                            : "Hiện tại không có thiếu nhi nào vắng quá 3 buổi trong lớp của bạn.",
+                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textLight),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )

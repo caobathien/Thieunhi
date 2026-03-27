@@ -50,6 +50,14 @@ class _ClassFormScreenState extends State<ClassFormScreen> {
 
     if (result['success'] && mounted) {
       Navigator.pop(context, true);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Có lỗi xảy ra, vui lòng thử lại'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -103,6 +111,13 @@ class _ClassFormScreenState extends State<ClassFormScreen> {
                                   child: TextFormField(
                                     controller: _academicYear,
                                     decoration: AppDecorations.inputDecoration(label: "Niên khóa", prefixIcon: Icons.calendar_today_rounded),
+                                    validator: (v) {
+                                      if (v == null || v.isEmpty) return "Bắt buộc";
+                                      if (!RegExp(r'^\d{4}-\d{4}$').hasMatch(v)) {
+                                        return "Định dạng: 2025-2026";
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
                               ],
@@ -112,6 +127,12 @@ class _ClassFormScreenState extends State<ClassFormScreen> {
                               controller: _capacity,
                               keyboardType: TextInputType.number,
                               decoration: AppDecorations.inputDecoration(label: "Sĩ số tối đa", prefixIcon: Icons.people_rounded),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return "Bắt buộc";
+                                final n = int.tryParse(v);
+                                if (n == null || n <= 0) return "Phải lớn hơn 0";
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 16),
                             TextFormField(

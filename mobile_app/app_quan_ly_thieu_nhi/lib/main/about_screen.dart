@@ -122,11 +122,11 @@ class _AboutScreenState extends State<AboutScreen> {
                           style: AppTextStyles.sectionHeader.copyWith(color: AppColors.primary),
                         ),
                         const SizedBox(height: 16),
-                        _contactRow(Icons.email_rounded, "Email", "support@tntt.app"),
+                        _contactRow(Icons.email_rounded, "Email", "caobathien01112004@gmail.com"),
                         const Divider(height: 20, color: AppColors.divider),
                         _contactRow(Icons.language_rounded, "Website", "www.tntt.app"),
                         const Divider(height: 20, color: AppColors.divider),
-                        _contactRow(Icons.phone_android, "Hotline", "0123 456 789"),
+                        _contactRow(Icons.phone_android, "Hotline", "0332941152"),
                       ],
                     ),
                   ),
@@ -140,7 +140,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: Column(
                       children: [
                         const Text(
-                          "Được phát triển với ❤️ cho cộng đồng TNTT",
+                          "Được phát triển với ❤️ cho nhà thờ Gò Vấp TNTT",
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
@@ -149,7 +149,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "© 2025 TNTT Manager. All rights reserved.",
+                          "© 2026 TNTT Manager. All rights reserved.",
                           style: AppTextStyles.caption,
                           textAlign: TextAlign.center,
                         ),

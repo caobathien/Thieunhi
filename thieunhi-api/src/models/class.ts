@@ -23,8 +23,10 @@ class ClassModel {
     // Tạo lớp mới
     async create(data: IClass) {
         const query = `
-            INSERT INTO classes (class_name, room_number, academic_year, total_capacity, main_leader_id, status, description)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO classes (class_name, room_number, academic_year, academic_year_id, total_capacity, main_leader_id, status, description)
+            VALUES ($1, $2, $3, 
+                (SELECT id FROM academic_years WHERE year_name = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1)), 
+                $4, $5, $6, $7)
             RETURNING *;
         `;
         const values = [
@@ -43,15 +45,16 @@ class ClassModel {
             SET class_name = COALESCE($1, class_name),
                 room_number = COALESCE($2, room_number),
                 academic_year = COALESCE($3, academic_year),
-                total_capacity = COALESCE($4, total_capacity),
-                main_leader_id = COALESCE($5, main_leader_id),
-                status = COALESCE($6, status),
-                description = COALESCE($7, description)
-            WHERE id = $8 RETURNING *;
+                academic_year_id = COALESCE($4, (SELECT id FROM academic_years WHERE year_name = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1))),
+                total_capacity = COALESCE($5, total_capacity),
+                main_leader_id = COALESCE($6, main_leader_id),
+                status = COALESCE($7, status),
+                description = COALESCE($8, description)
+            WHERE id = $9 RETURNING *;
         `;
         const values = [
             data.class_name, data.room_number, data.academic_year,
-            data.total_capacity, data.main_leader_id, 
+            data.academic_year_id, data.total_capacity, data.main_leader_id, 
             data.status, data.description, id
         ];
         const result = await pool.query(query, values);
