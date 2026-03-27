@@ -23,10 +23,13 @@ class ClassModel {
     // Tạo lớp mới
     async create(data: IClass) {
         const query = `
-            INSERT INTO classes (class_name, room_number, academic_year, academic_year_id, total_capacity, main_leader_id, status, description)
-            VALUES ($1, $2, $3, 
-                (SELECT id FROM academic_years WHERE academic_year = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1)), 
-                $4, $5, $6, $7)
+            INSERT INTO classes (class_name,room_number,academic_year,academic_year_id,total_capacity,main_leader_id,status,description)
+            SELECT$1,$2,$3,ay.id,$4,$5,$6,$7
+             FROM academic_years ay
+            JOIN system_settings ss
+          ON ss.value = ay.academic_year
+            WHERE ss.key = 'current_academic_year'
+        LIMIT 1
             RETURNING *;
         `;
         const values = [
