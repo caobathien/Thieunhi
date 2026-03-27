@@ -25,7 +25,7 @@ class ClassModel {
         const query = `
             INSERT INTO classes (class_name, room_number, academic_year, academic_year_id, total_capacity, main_leader_id, status, description)
             VALUES ($1, $2, $3, 
-                (SELECT id FROM academic_years WHERE year_name = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1)), 
+                (SELECT id FROM academic_years WHERE academic_year = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1)), 
                 $4, $5, $6, $7)
             RETURNING *;
         `;
@@ -45,7 +45,7 @@ class ClassModel {
             SET class_name = COALESCE($1, class_name),
                 room_number = COALESCE($2, room_number),
                 academic_year = COALESCE($3, academic_year),
-                academic_year_id = COALESCE($4, (SELECT id FROM academic_years WHERE year_name = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1))),
+                academic_year_id = COALESCE($4, (SELECT id FROM academic_years WHERE academic_year = (SELECT value FROM system_settings WHERE key = 'current_academic_year' LIMIT 1))),
                 total_capacity = COALESCE($5, total_capacity),
                 main_leader_id = COALESCE($6, main_leader_id),
                 status = COALESCE($7, status),
