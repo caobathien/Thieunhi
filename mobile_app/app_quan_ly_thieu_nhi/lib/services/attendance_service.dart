@@ -30,6 +30,7 @@ class AttendanceService {
   } catch (e) {
     return {"success": false, "message": "Lỗi kết nối: $e"};
   }
+  }
 
   // Lấy danh sách thiếu nhi có nguy cơ (nghỉ >= 3 buổi)
   Future<List<Map<String, dynamic>>> getAtRiskStudents(int classId) async {

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
 import 'theme/notification_controller.dart';
+import 'services/spiritual_notification_service.dart';
 
 // Import các wrapper và auth
 import 'main/main_wrapper.dart';
@@ -30,6 +31,10 @@ void main() async {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
+  
+  // Khởi tạo thông báo Lời Chúa + Kinh Sáng/Tối
+  await SpiritualNotificationService.init();
+  
   runApp(
     MultiProvider(
       providers: [

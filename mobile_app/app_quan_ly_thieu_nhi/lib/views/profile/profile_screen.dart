@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../theme/theme_controller.dart';
 import '../../services/leader_profile_service.dart';
 import '../../services/user_profile_service.dart';
+import '../../services/spiritual_notification_service.dart';
 import '../../theme/app_theme.dart';
 import 'edit_profile_screen.dart';
 import 'edit_account_screen.dart';
@@ -267,6 +268,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ],
                         ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(height: 1, color: AppColors.divider),
+                      ),
+                      // ── Notification Toggle ──
+                      FutureBuilder<bool>(
+                        future: SpiritualNotificationService.isEnabled(),
+                        builder: (context, snapshot) {
+                          final isEnabled = snapshot.data ?? true;
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accentLight,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(Icons.menu_book_rounded, color: AppColors.accent, size: 18),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("Lời Chúa hằng ngày", style: AppTextStyles.titleSmall.copyWith(fontSize: 14)),
+                                      Text("Kinh sáng 5h • Lời Chúa 7h • Kinh tối 22h",  style: AppTextStyles.caption.copyWith(fontSize: 10, color: AppColors.textLight)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Switch(
+                                value: isEnabled,
+                                onChanged: (val) async {
+                                  await SpiritualNotificationService.setEnabled(val);
+                                  setState(() {});
+                                },
+                                activeColor: AppColors.accent,
+                                activeTrackColor: AppColors.accentLight,
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
