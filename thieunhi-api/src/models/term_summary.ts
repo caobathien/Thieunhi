@@ -4,17 +4,28 @@ import { ITermSummary } from '../interfaces/term_summary';
 class TermSummaryModel {
     // 1. Tự động tính toán và cập nhật tổng kết cho một em
     async calculateSummary(childId: string, classId: number, term: string, year: string) {
-        // Lấy số buổi điểm danh (Có mặt/Muộn tính là có mặt)
-        const attendanceRes = await pool.query(
-            `SELECT 
-                COUNT(*) FILTER (WHERE status IN ('Có mặt', 'Muộn')) as present,
-                COUNT(*) as total
-                FROM attendance 
-                WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`,
+        // A. Lấy danh sách các ngày Chủ Nhật thực tế có điểm danh cho lớp này
+        const classSundaysRes = await pool.query(
+            `SELECT DISTINCT attendance_date 
+             FROM attendance 
+             WHERE class_id = $1 AND academic_year = $2 
+               AND EXTRACT(DOW FROM attendance_date) = 0`,
+            [classId, year]
+        );
+        const totalSundays = parseInt(classSundaysRes.rowCount?.toString() ?? '0');
+
+        // B. Lấy số buổi có mặt của học sinh đó vào các ngày Chủ Nhật này
+        const presentSundaysRes = await pool.query(
+            `SELECT COUNT(*) as present
+             FROM attendance 
+             WHERE child_id = $1 AND class_id = $2 AND academic_year = $3 
+               AND EXTRACT(DOW FROM attendance_date) = 0 
+               AND status IN ('Có mặt', 'Muộn')`,
             [childId, classId, year]
         );
+        const present = parseInt(presentSundaysRes.rows[0].present);
 
-        // Lấy điểm trung bình học tập (GPA) từ bảng grades theo học kỳ
+        // C. Lấy điểm trung bình học tập (GPA) từ bảng grades theo học kỳ
         let gpaQuery = '';
         if (term === 'HK1') {
             gpaQuery = `SELECT (midterm_score_k1 + final_score_k1) / 2 as gpa FROM grades WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`;
@@ -25,13 +36,10 @@ class TermSummaryModel {
         }
 
         const gradeRes = await pool.query(gpaQuery, [childId, classId, year]);
-
-        const { present, total } = attendanceRes.rows[0];
         const academic_score = gradeRes.rows.length > 0 ? parseFloat(gradeRes.rows[0].gpa) || 0 : 0;
         
-        // CHƯA CHIA 2: Quy đổi chuyên cần sang thang điểm 10 và cộng trung bình
-        const attendance_score = total > 0 ? (parseInt(present) / parseInt(total)) * 10 : 0;
-        const final_avg = (academic_score + attendance_score) / 2;
+        // D. KẾT QUẢ: avg_score LẤY TRỰC TIẾP TỪ GRADED (Không chia đôi với chuyên cần)
+        const final_avg = academic_score;
 
         const query = `
             INSERT INTO term_summaries (child_id, class_id, term, academic_year, avg_score, attendance_count, absence_count, updated_at)
@@ -40,11 +48,12 @@ class TermSummaryModel {
             DO UPDATE SET 
                 avg_score = EXCLUDED.avg_score,
                 attendance_count = EXCLUDED.attendance_count,
+                absence_count = EXCLUDED.absence_count,
                 updated_at = NOW()
             RETURNING *;
         `;
         
-        const values = [childId, classId, term, year, final_avg.toFixed(2), present, (total - present)];
+        const values = [childId, classId, term, year, final_avg.toFixed(2), present, (totalSundays - present)];
         const result = await pool.query(query, values);
         return result.rows[0];
     }
@@ -91,13 +100,14 @@ class TermSummaryModel {
     async findSummariesWithStudentInfo(classId: number, year: string) {
     const query = `
         SELECT 
-            ts.*, 
+            c.id as child_id,
             c.first_name, 
             c.last_name, 
-            c.baptismal_name 
-        FROM term_summaries ts
-        JOIN children c ON ts.child_id = c.id
-        WHERE ts.class_id = $1 AND ts.academic_year = $2
+            c.baptismal_name,
+            ts.*
+        FROM children c
+        LEFT JOIN term_summaries ts ON c.id = ts.child_id AND ts.academic_year = $2
+        WHERE c.class_id = $1
         ORDER BY c.first_name ASC, ts.term ASC;
     `;
     const result = await pool.query(query, [classId, year]);

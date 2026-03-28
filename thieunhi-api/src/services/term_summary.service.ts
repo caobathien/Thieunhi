@@ -71,16 +71,19 @@ class TermSummaryService {
         throw new Error('Chưa có dữ liệu tổng kết cho lớp này trong năm học được chọn');
     }
 
-    // 2. Format lại dữ liệu để hiển thị (ví dụ tính tỷ lệ chuyên cần %)
+    // 2. Format lại dữ liệu để hiển thị
     return summaries.map(s => ({
         child_id: s.child_id,
-        full_name: `${s.last_name} ${s.first_name}`,
+        full_name: `${s.last_name || ''} ${s.first_name || ''}`.trim(),
         baptismal_name: s.baptismal_name,
-        term: s.term,
-        avg_score: s.avg_score,
-        final_result: s.final_result,
+        term: s.term || 'Chưa có',
+        avg_score: s.avg_score || '0.00',
+        final_result: s.final_result || 'Chưa xét',
+        conduct_grade: s.conduct_grade || '---',
+        attendance_count: s.attendance_count || 0,
+        absence_count: s.absence_count || 0,
         attendance_rate: s.attendance_count > 0 
-            ? `${((s.attendance_count / (Number(s.attendance_count) + Number(s.absence_count))) * 100).toFixed(1)}%`
+            ? `${((Number(s.attendance_count) / (Number(s.attendance_count) + Number(s.absence_count))) * 100).toFixed(1)}%`
             : '0%'
     }));
 }

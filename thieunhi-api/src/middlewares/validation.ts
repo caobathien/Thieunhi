@@ -16,7 +16,7 @@ export const validate = (schema: Schema, property: 'body' | 'query' | 'params' =
       res.status(400).json({
         success: false,
         message,
-        details: process.env.NODE_ENV === 'development' ? details : undefined
+        details: details // Luôn hiển thị chi tiết để debug lỗi 400 trên Render
       });
     }
   };
