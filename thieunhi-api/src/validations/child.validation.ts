@@ -11,7 +11,7 @@ export const createChildSchema = Joi.object({
     'any.required': 'Họ là bắt buộc',
   }),
   baptismal_name: Joi.string().allow('', null),
-  birth_date: Joi.date().allow(null),
+  birth_date: Joi.date().allow('', null),
   gender: Joi.any().required().messages({
     'any.required': 'Giới tính là bắt buộc',
   }),
@@ -26,7 +26,7 @@ export const createChildSchema = Joi.object({
   emergency_phone: Joi.string().allow('', null),
   ma_qr: Joi.string().allow('', null),
   status: Joi.string().valid('active', 'inactive', 'graduated').default('active'),
-  join_date: Joi.date().allow(null),
+  join_date: Joi.date().allow('', null),
   notes: Joi.string().allow('', null),
 }).unknown(true);
 
@@ -35,7 +35,7 @@ export const updateChildSchema = Joi.object({
   first_name: Joi.string(),
   last_name: Joi.string(),
   baptismal_name: Joi.string().allow('', null),
-  birth_date: Joi.date().allow(null),
+  birth_date: Joi.date().allow('', null),
   gender: Joi.any(),
   avatar_url: Joi.string().allow('', null),
   address: Joi.string().allow('', null),
@@ -48,6 +48,6 @@ export const updateChildSchema = Joi.object({
   emergency_phone: Joi.string().allow('', null),
   ma_qr: Joi.string().allow('', null),
   status: Joi.string().valid('active', 'inactive', 'graduated'),
-  join_date: Joi.date().allow(null),
+  join_date: Joi.date().allow('', null),
   notes: Joi.string().allow('', null),
 }).unknown(true);
