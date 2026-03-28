@@ -35,12 +35,13 @@ class TermSummaryService {
      */
     async getStudentFullSummary(childId: string, year: string) {
         const summaries = await TermSummaryModel.findSummary(childId, year);
+        const absenceDates = await TermSummaryModel.getAbsenceDates(childId, year);
         
         if (!summaries || summaries.length === 0) {
             throw new Error('Chưa có dữ liệu tổng kết cho thiếu nhi này trong năm học được chọn');
         }
 
-        return summaries.map(s => ({
+        const formattedSummaries = summaries.map(s => ({
             ...s,
             attendance_rate: s.attendance_count > 0 
                 ? `${((s.attendance_count / (s.attendance_count + s.absence_count)) * 100).toFixed(1)}%`

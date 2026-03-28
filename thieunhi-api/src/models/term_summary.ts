@@ -104,15 +104,35 @@ class TermSummaryModel {
             c.first_name, 
             c.last_name, 
             c.baptismal_name,
-            ts.*
+            ts.*,
+            g.midterm_score_k1,
+            g.final_score_k1,
+            g.midterm_score_k2,
+            g.final_score_k2
         FROM children c
         LEFT JOIN term_summaries ts ON c.id = ts.child_id AND ts.academic_year = $2 AND ts.term = $3
+        LEFT JOIN grades g ON c.id = g.child_id AND g.academic_year = $2
         WHERE c.class_id = $1
         ORDER BY c.first_name ASC;
     `;
     const result = await pool.query(query, [classId, year, term]);
     return result.rows;
 }
+
+    // Lấy danh sách các ngày vắng Chủ Nhật cụ thể
+    async getAbsenceDates(childId: string, year: string) {
+        const query = `
+            SELECT attendance_date
+            FROM attendance
+            WHERE child_id = $1 
+                AND academic_year = $2 
+                AND status = 'Vắng'
+                AND EXTRACT(DOW FROM attendance_date) = 0
+            ORDER BY attendance_date DESC;
+        `;
+        const result = await pool.query(query, [childId, year]);
+        return result.rows.map(row => row.attendance_date);
+    }
 }
 
 export default new TermSummaryModel();
