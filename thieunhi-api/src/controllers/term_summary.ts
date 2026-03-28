@@ -38,7 +38,7 @@ class TermSummaryController {
     async getClassSummary(req: Request, res: Response) {
         try {
             const { classId } = req.params;
-            const { year } = req.query;
+            const { year, term } = req.query;
             const currentUser = (req as any).user;
 
             if (!classId || !year) {
@@ -54,7 +54,8 @@ class TermSummaryController {
 
             const data = await TermSummaryService.getClassFullSummary(
                 Number(classId), 
-                year as string
+                year as string,
+                (term as string) || 'HK1'
             );
             
             return sendSuccess(res, 'Lấy dữ liệu tổng kết cả lớp thành công', data);

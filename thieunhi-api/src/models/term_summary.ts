@@ -28,14 +28,14 @@ class TermSummaryModel {
         // C. Lấy điểm trung bình học tập (GPA) từ bảng grades theo học kỳ
         let gpaQuery = '';
         if (term === 'HK1') {
-            gpaQuery = `SELECT (midterm_score_k1 + final_score_k1) / 2 as gpa FROM grades WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`;
+            gpaQuery = `SELECT (midterm_score_k1 + final_score_k1) / 2 as gpa FROM grades WHERE child_id = $1 AND academic_year = $2`;
         } else if (term === 'HK2') {
-            gpaQuery = `SELECT (midterm_score_k2 + final_score_k2) / 2 as gpa FROM grades WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`;
+            gpaQuery = `SELECT (midterm_score_k2 + final_score_k2) / 2 as gpa FROM grades WHERE child_id = $1 AND academic_year = $2`;
         } else { // CaNam
-            gpaQuery = `SELECT ((midterm_score_k1 + final_score_k1) / 2 + (midterm_score_k2 + final_score_k2) / 2) / 2 as gpa FROM grades WHERE child_id = $1 AND class_id = $2 AND academic_year = $3`;
+            gpaQuery = `SELECT ((midterm_score_k1 + final_score_k1) / 2 + (midterm_score_k2 + final_score_k2) / 2) / 2 as gpa FROM grades WHERE child_id = $1 AND academic_year = $2`;
         }
 
-        const gradeRes = await pool.query(gpaQuery, [childId, classId, year]);
+        const gradeRes = await pool.query(gpaQuery, [childId, year]);
         const academic_score = gradeRes.rows.length > 0 ? parseFloat(gradeRes.rows[0].gpa) || 0 : 0;
         
         // D. KẾT QUẢ: avg_score LẤY TRỰC TIẾP TỪ GRADED (Không chia đôi với chuyên cần)
@@ -97,7 +97,7 @@ class TermSummaryModel {
         return result.rows[0];
     }
     // xem tổng kết thiếu nhi trong lớp
-    async findSummariesWithStudentInfo(classId: number, year: string) {
+    async findSummariesWithStudentInfo(classId: number, year: string, term: string) {
     const query = `
         SELECT 
             c.id as child_id,
@@ -106,11 +106,11 @@ class TermSummaryModel {
             c.baptismal_name,
             ts.*
         FROM children c
-        LEFT JOIN term_summaries ts ON c.id = ts.child_id AND ts.academic_year = $2
+        LEFT JOIN term_summaries ts ON c.id = ts.child_id AND ts.academic_year = $2 AND ts.term = $3
         WHERE c.class_id = $1
-        ORDER BY c.first_name ASC, ts.term ASC;
+        ORDER BY c.first_name ASC;
     `;
-    const result = await pool.query(query, [classId, year]);
+    const result = await pool.query(query, [classId, year, term]);
     return result.rows;
 }
 }

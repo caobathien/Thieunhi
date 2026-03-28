@@ -61,11 +61,9 @@ class TermSummaryService {
         return await TermSummaryModel.updateManualInfo(id, evaluationData);
     }
 
-    // xem tổng kết all thiếu nhi của lớp 
-    async getClassFullSummary(classId: number, year: string) {
-    // 1. Lấy dữ liệu tổng kết từ Model (đã bao gồm điểm trung bình sau khi chia 2)
-    // Lưu ý: Bạn cần đảm bảo Model có hàm lấy theo class_id và join với bảng children để lấy tên
-    const summaries = await TermSummaryModel.findSummariesWithStudentInfo(classId, year);
+    async getClassFullSummary(classId: number, year: string, term: string) {
+    // 1. Lấy dữ liệu tổng kết từ Model (đã lọc theo term)
+    const summaries = await TermSummaryModel.findSummariesWithStudentInfo(classId, year, term);
     
     if (!summaries || summaries.length === 0) {
         throw new Error('Chưa có dữ liệu tổng kết cho lớp này trong năm học được chọn');
