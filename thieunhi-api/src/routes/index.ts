@@ -13,6 +13,7 @@ import activityRoutes from './activity';
 import feedbackRoutes from './feedback';
 import uploadRoutes from './upload';
 import userProfileRoutes from './user_profile';
+import priestRoutes from './priests';
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use('/class-statistics', classStatisticRoutes);
 router.use('/activities', activityRoutes);
 router.use('/feedbacks', feedbackRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/priests', priestRoutes);
 
 export default router;

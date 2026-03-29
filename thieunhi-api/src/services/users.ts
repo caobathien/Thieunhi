@@ -42,7 +42,16 @@ class UsersService {
             }
         }
 
-        const updatedUser = await UserModel.update(id, safeData);
+        // Lọc cấu trúc dữ liệu gửi lên chỉ lấy các trường có trong bảng users
+        const allowedFields = ['full_name', 'gmail', 'phone', 'avatar_url', 'notes'];
+        const filteredData: Partial<IUser> = {};
+        for (const key of Object.keys(safeData)) {
+            if (allowedFields.includes(key)) {
+                filteredData[key as keyof IUser] = (safeData as any)[key];
+            }
+        }
+
+        const updatedUser = await UserModel.update(id, filteredData);
         if (!updatedUser) throw new Error('Cập nhật thất bại, người dùng không tồn tại');
         
         return updatedUser;

@@ -13,7 +13,7 @@ export const updateProfileSchema = Joi.object({
     }),
     avatar_url: Joi.string().uri().allow('', null),
     notes: Joi.string().allow('', null)
-});
+}).unknown(true);
 
 export const changePasswordSchema = Joi.object({
     oldPassword: Joi.string().required().messages({

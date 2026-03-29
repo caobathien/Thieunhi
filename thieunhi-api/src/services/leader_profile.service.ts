@@ -56,15 +56,23 @@ class LeaderProfileService {
         try {
             await client.query('BEGIN');
 
-            // 1. Nếu có đổi username, kiểm tra tính duy nhất
+            // 1. Sync fields with users table
+            const userUpdateData: any = {};
             if (data.username) {
                 const existingUser = await AuthService.getUserByUsername(data.username);
                 if (existingUser && existingUser.id !== userId) {
                     throw new Error('Tên tài khoản đã tồn tại');
                 }
-                // Cập nhật bảng users
+                userUpdateData.username = data.username;
+            }
+            if (data.full_name !== undefined) userUpdateData.full_name = data.full_name;
+            if (data.phone !== undefined) userUpdateData.phone = data.phone;
+            if (data.gmail !== undefined) userUpdateData.gmail = data.gmail;
+            if (data.avatar_url !== undefined) userUpdateData.avatar_url = data.avatar_url;
+
+            if (Object.keys(userUpdateData).length > 0) {
                 const UserModel = (await import('../models/user')).default;
-                await UserModel.update(userId, { username: data.username });
+                await UserModel.update(userId, userUpdateData);
             }
 
             // 2. Cập nhật các trường trong leaders_profile

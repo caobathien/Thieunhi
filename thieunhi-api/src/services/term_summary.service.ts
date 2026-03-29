@@ -72,7 +72,10 @@ class TermSummaryService {
 
     // 2. Format lại dữ liệu để hiển thị
     return summaries.map(s => ({
+        ...s,
         child_id: s.child_id,
+        first_name: s.first_name,
+        last_name: s.last_name,
         full_name: `${s.last_name || ''} ${s.first_name || ''}`.trim(),
         baptismal_name: s.baptismal_name,
         term: s.term || 'Chưa có',
@@ -81,6 +84,11 @@ class TermSummaryService {
         conduct_grade: s.conduct_grade || '---',
         attendance_count: s.attendance_count || 0,
         absence_count: s.absence_count || 0,
+        // Giữ lại các đầu điểm chi tiết từ Model
+        midterm_score_k1: s.midterm_score_k1,
+        final_score_k1: s.final_score_k1,
+        midterm_score_k2: s.midterm_score_k2,
+        final_score_k2: s.final_score_k2,
         attendance_rate: s.attendance_count > 0 
             ? `${((Number(s.attendance_count) / (Number(s.attendance_count) + Number(s.absence_count))) * 100).toFixed(1)}%`
             : '0%'

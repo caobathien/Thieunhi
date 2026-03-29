@@ -96,9 +96,16 @@ class LeaderProfileModel {
                 u.id as user_id, u.username, u.full_name as account_full_name, 
                 u.gmail as account_gmail, u.phone as account_phone, u.role as account_role,
                 lp.id, lp.christian_name, lp.full_name, lp.rank, lp.position, lp.status,
-                lp.avatar_url, lp.phone, lp.gmail, lp.award_notes, lp.notes
+                lp.avatar_url, lp.phone, lp.gmail, lp.award_notes, lp.notes,
+                ac.class_name as assigned_class
             FROM users u
             INNER JOIN leaders_profile lp ON u.id = lp.user_id
+            LEFT JOIN (
+                SELECT DISTINCT ON (ca.user_id) ca.user_id, c.class_name
+                FROM class_assignments ca
+                JOIN classes c ON ca.class_id = c.id
+                ORDER BY ca.user_id, ca.assigned_at DESC
+            ) ac ON u.id = ac.user_id
             ORDER BY COALESCE(lp.full_name, u.full_name) ASC;
         `;
         const result = await pool.query(query);
