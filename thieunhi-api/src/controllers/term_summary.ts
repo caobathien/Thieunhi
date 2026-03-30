@@ -45,10 +45,7 @@ class TermSummaryController {
                 return sendError(res, 'Thiếu mã lớp hoặc niên học', 400);
             }
 
-            if (currentUser.role === 'leader') {
-                const isAssigned = await ClassAssignmentModel.isUserAssignedToClass(currentUser.id, Number(classId));
-                if (!isAssigned) return sendError(res, 'Bạn không có quyền xem dữ liệu lớp này', 403);
-            } else if (currentUser.role !== 'admin' && currentUser.role !== 'leader-vip' && currentUser.role !== 'user') {
+            if (currentUser.role !== 'admin' && currentUser.role !== 'leader-vip' && currentUser.role !== 'leader' && currentUser.role !== 'user') {
                 return sendError(res, 'Bạn không có quyền thực hiện hành động này', 403);
             }
 

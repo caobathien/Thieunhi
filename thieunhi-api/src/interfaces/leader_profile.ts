@@ -13,4 +13,6 @@ export interface ILeaderProfile {
     avatar_url?: string;
     award_notes?: string;
     notes?: string;
+    assigned_class?: string;
+    assigned_class_id?: number;
 }

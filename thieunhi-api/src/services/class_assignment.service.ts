@@ -50,6 +50,14 @@
             
             return true;
         }
+
+        async getAssignmentDetail(id: number) {
+            const assignment = await ClassAssignmentModel.findById(id);
+            if (!assignment) {
+                throw new Error('Không tìm thấy bản ghi phân công');
+            }
+            return assignment;
+        }
         async exportAssignmentsToExcel(classId: number, academicYear: string) {
             const leaders = await ClassAssignmentModel.findByClass(classId, academicYear);
             

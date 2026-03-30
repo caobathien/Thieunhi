@@ -81,6 +81,18 @@ class ClassAssignmentModel {
         return (result.rowCount ?? 0) > 0;
     }
 
+    async findById(id: number) {
+        const query = `
+            SELECT ca.*, u.full_name, c.class_name
+            FROM class_assignments ca
+            JOIN users u ON ca.user_id = u.id
+            JOIN classes c ON ca.class_id = c.id
+            WHERE ca.id = $1
+        `;
+        const result = await pool.query(query, [id]);
+        return result.rows[0];
+    }
+
     // Lấy phân công hiện tại của một user (cho profile)
     async findByUserId(userId: string) {
         const query = `

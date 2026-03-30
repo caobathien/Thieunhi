@@ -15,6 +15,7 @@ router.get('/class/:classId', AuthMiddleware.protect, ClassAssignmentController.
 
 // Gỡ phân công
 router.delete('/:id', AuthMiddleware.protect, AuthMiddleware.restrictTo('admin', 'leader-vip'), ClassAssignmentController.removeAssignment);
+router.get('/:id', AuthMiddleware.protect, ClassAssignmentController.getAssignmentById);
 router.get('/export/excel/:classId', AuthMiddleware.protect,AuthMiddleware.restrictTo('admin', 'leader-vip'), ClassAssignmentController.exportExcel);
 
 export default router;

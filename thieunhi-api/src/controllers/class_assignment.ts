@@ -50,6 +50,17 @@ class ClassAssignmentController {
             return sendError(res, error.message, 404);
         }
     }
+
+    // Lấy chi tiết một phân công
+    async getAssignmentById(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const assignment = await ClassAssignmentService.getAssignmentDetail(Number(id));
+            return sendSuccess(res, 'Lấy chi tiết phân công thành công', assignment);
+        } catch (error: any) {
+            return sendError(res, error.message, 404);
+        }
+    }
     async exportExcel(req: Request, res: Response) {
     try {
         const { classId } = req.params;
