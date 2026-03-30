@@ -78,7 +78,7 @@ class LeaderProfileService {
             // 2. Cập nhật các trường trong leaders_profile
             const editableFields = [
                 'christian_name', 'full_name', 'phone', 'gmail', 
-                'dob', 'avatar_url', 'notes'
+                'dob', 'rank', 'position', 'join_date', 'avatar_url', 'notes'
             ];
             
             const filteredData: any = {};

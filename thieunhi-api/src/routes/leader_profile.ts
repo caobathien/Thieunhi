@@ -14,7 +14,7 @@ router.get('/', AuthMiddleware.protect, AuthMiddleware.restrictTo('admin', 'lead
 router.get('/profile', AuthMiddleware.protect, AuthMiddleware.restrictTo('leader', 'admin', 'user', 'teacher'), LeaderProfileController.getMyProfile);
 
 // ✅ UPDATE own profile — tĩnh, phải đặt trước /:id
-router.patch('/profile', AuthMiddleware.protect, AuthMiddleware.restrictTo('leader', 'user', 'teacher'), LeaderProfileController.updateMyProfile);
+router.patch('/profile', AuthMiddleware.protect, AuthMiddleware.restrictTo('leader', 'user', 'teacher', 'admin'), LeaderProfileController.updateMyProfile);
 
 // ✅ Admin update — tĩnh prefix /admin, đặt trước /:id
 router.patch('/admin/:userId', AuthMiddleware.protect, AuthMiddleware.restrictTo('admin'), LeaderProfileController.adminUpdateProfile);
