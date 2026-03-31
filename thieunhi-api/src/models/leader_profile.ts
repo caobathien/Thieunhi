@@ -59,22 +59,25 @@ class LeaderProfileModel {
         return result.rows[0];
     }
 
-    // Cập nhật hồ sơ
+    // Cập nhật hoặc tạo mới hồ sơ (UPSERT)
     async update(userId: string, data: Partial<ILeaderProfile>) {
         const fields = Object.keys(data).filter(key => key !== 'user_id' && key !== 'id');
-        if (fields.length === 0) return null;
-
-        const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
-        const values = fields.map(field => (data as any)[field]);
-
+        
+        // Luôn đảm bảo có user_id
+        const allFields = ['user_id', ...fields];
+        const placeholders = allFields.map((_, i) => `$${i + 1}`).join(', ');
+        const updateClause = fields.map((field, i) => `${field} = EXCLUDED.${field}`).join(', ');
+        
         const query = `
-            UPDATE leaders_profile
-            SET ${setClause}
-            WHERE user_id = $${fields.length + 1} 
+            INSERT INTO leaders_profile (${allFields.join(', ')})
+            VALUES (${placeholders})
+            ON CONFLICT (user_id) 
+            DO UPDATE SET ${updateClause === '' ? 'user_id = EXCLUDED.user_id' : updateClause}
             RETURNING *;
         `;
         
-        const result = await pool.query(query, [...values, userId]);
+        const values = [userId, ...fields.map(field => (data as any)[field])];
+        const result = await pool.query(query, values);
         return result.rows[0];
     }
 
