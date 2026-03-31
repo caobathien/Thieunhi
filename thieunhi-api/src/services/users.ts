@@ -64,7 +64,7 @@ class UsersService {
         }
 
         // Lọc cấu trúc dữ liệu gửi lên chỉ lấy các trường có trong bảng users
-        const allowedFields = ['full_name', 'gmail', 'phone', 'avatar_url', 'notes'];
+        const allowedFields = ['username', 'full_name', 'gmail', 'phone', 'avatar_url', 'notes', 'created_at'];
         const filteredData: Partial<IUser> = {};
         for (const key of Object.keys(safeData)) {
             if (allowedFields.includes(key)) {
