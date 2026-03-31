@@ -5,7 +5,7 @@ export interface ILeaderProfile {
     full_name?: string;
     phone?: string;
     gmail?: string;
-    dob?: string;
+    birth_date?: string;
     rank: string;      // Cấp bậc: Dự trưởng, Cấp 1, 2, 3...
     position: string;  // Chức vụ: Trưởng khối, Thư ký, GLV...
     join_date?: string;

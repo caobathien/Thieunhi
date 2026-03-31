@@ -7,16 +7,17 @@ class LeaderProfileModel {
         const query = `
             INSERT INTO leaders_profile (
                 user_id, christian_name, full_name, phone, gmail, 
-                dob, rank, position, join_date, status, avatar_url, award_notes, notes
+                birth_date, rank, position, join_date, status, avatar_url, award_notes, notes
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING *;
         `;
         const values = [
             data.user_id, data.christian_name, data.full_name, data.phone, data.gmail,
-            data.dob, data.rank, data.position, data.join_date, 
+            data.birth_date, data.rank, data.position, data.join_date, 
             data.status || 'Đang công tác', data.avatar_url, data.award_notes, data.notes
         ];
+        console.log('Executing create query:', query, values);
         const result = await pool.query(query, values);
         return result.rows[0];
     }
@@ -28,7 +29,7 @@ class LeaderProfileModel {
                 u.gmail as account_gmail, u.phone as account_phone, u.role as account_role,
                 u.status as account_status, u.is_active, u.created_at as account_created_at,
                 lp.id, lp.christian_name, lp.full_name, lp.phone, lp.gmail,
-                lp.dob, lp.rank, lp.position, lp.join_date, lp.status, 
+                lp.birth_date, lp.rank, lp.position, lp.join_date, lp.status, 
                 lp.avatar_url, lp.award_notes, lp.notes,
                 ac.class_id as assigned_class_id, ac.class_name as assigned_class
             FROM users u
