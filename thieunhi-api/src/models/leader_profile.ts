@@ -29,7 +29,8 @@ class LeaderProfileModel {
                 u.gmail as account_gmail, u.phone as account_phone, u.role as account_role,
                 u.status as account_status, u.is_active, u.created_at as account_created_at,
                 lp.id, lp.christian_name, lp.full_name, lp.phone, lp.gmail,
-                lp.birth_date, lp.rank, lp.position, lp.join_date, lp.status, 
+                COALESCE(lp.birth_date, lp.dob) as birth_date, lp.dob,
+                lp.rank, lp.position, lp.join_date, lp.status, 
                 lp.avatar_url, lp.award_notes, lp.notes,
                 ac.class_id as assigned_class_id, ac.class_name as assigned_class
             FROM users u
@@ -40,7 +41,10 @@ class LeaderProfileModel {
                 JOIN classes c ON ca.class_id = c.id
                 ORDER BY ca.user_id, ca.assigned_at DESC
             ) ac ON u.id = ac.user_id
-            WHERE u.id = $1;
+            WHERE u.id = $1
+            ORDER BY 
+                CASE WHEN lp.christian_name IS NOT NULL AND lp.christian_name != 'Chưa cập nhật' THEN 0 ELSE 1 END,
+                lp.id DESC;
         `;
         const result = await pool.query(query, [userId]);
         return result.rows[0];

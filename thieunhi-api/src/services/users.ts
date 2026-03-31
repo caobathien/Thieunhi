@@ -10,13 +10,34 @@ class UsersService {
         return users.map(({ password_hash, ...user }) => user);
     }
 
-    // 2. Lấy chi tiết thông tin theo ID
+    // 2. Lấy chi tiết thông tin theo ID (Tự động gộp hồ sơ Huynh trưởng nếu có)
     async getUserById(id: string) {
         const user = await UserModel.findById(id); 
         if (!user) throw new Error('Không tìm thấy người dùng');
         const { password_hash, ...userProfile } = user;
 
-        // Bổ sung thông tin lớp được phân công (nếu có)
+        // Nếu là Huynh trưởng, gộp thêm thông tin từ leaders_profile
+        const role = userProfile.role?.toString().toLowerCase();
+        if (role !== 'user') {
+            try {
+                const leaderProfile = await LeaderProfileModel.findByUserId(id);
+                if (leaderProfile) {
+                    console.log('Successfully merged leader profile for user:', id);
+                    const mergedProfile = {
+                        ...userProfile,
+                        ...leaderProfile,
+                        birth_date: leaderProfile.birth_date || leaderProfile.dob
+                    };
+                    return mergedProfile;
+                } else {
+                    console.log('No leader profile found for user with role:', role, 'userId:', id);
+                }
+            } catch (err) {
+                console.error('Error fetching leader profile for merge:', err);
+            }
+        }
+
+        // Bổ sung thông tin lớp được phân công (Dành cho user thường hoặc nếu chưa gộp ở trên)
         try {
             const assignment = await require('../models/class_assignment').default.findByUserId(id);
             if (assignment) {
@@ -24,7 +45,7 @@ class UsersService {
                 (userProfile as any).assigned_class_name = assignment.class_name;
             }
         } catch (err) {
-            // Không có phân công hoặc class_assignment model chưa load
+            // Không có phân công
         }
 
         return userProfile;
